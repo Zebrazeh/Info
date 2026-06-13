@@ -13,6 +13,7 @@ Datenschutz: <https://zebrazeh.github.io/Info/datenschutz_soundfreq>
 -
 Impressum: <http://zebrazeh.de?page_id=2>
 -----
+About:
 
 SoundFreq ist ein Gitarren-Stimmgerät für iPhone. Es erkennt Töne in Echtzeit über das Mikrofon und zeigt dir, ob deine Saiten richtig gestimmt sind.
 
