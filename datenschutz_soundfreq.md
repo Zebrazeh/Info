@@ -8,11 +8,13 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
 <https://paypal.me/zebrazeh>
 
------
-Impressum: <http://zebrazeh.de?page_id=2>
------
+---
 
-DATENSCHUTZERKLÄRUNG – SOUNDFREQ
+**Impressum:** <http://zebrazeh.de?page_id=2>
+
+---
+
+##DATENSCHUTZERKLÄRUNG – SOUNDFREQ
  Stand: Mai 2026
 
   1. Verantwortlicher
