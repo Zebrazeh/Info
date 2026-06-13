@@ -1,6 +1,6 @@
 Wenn Ihnen die App gefällt freue ich mich über einen kleine Geldzuwendung:
 
-https://paypal.me/zebrazeh
+<https://paypal.me/zebrazeh>
 
 -----
 
