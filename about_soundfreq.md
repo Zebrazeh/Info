@@ -1,6 +1,14 @@
+Wenn Ihnen die App gefällt freue ich mich über einen Kaffee ;-)
 
+If you enjoy the app, I'd love a coffee ;-)
 
+Si l'application vous plaît, je serais ravi d'un café ;-)
 
+Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
+
+<https://paypal.me/zebrazeh>
+
+-----
 
 
 SoundFreq ist ein Gitarren-Stimmgerät für iPhone. Es erkennt Töne in Echtzeit über das Mikrofon und zeigt dir, ob deine Saiten richtig gestimmt sind.
