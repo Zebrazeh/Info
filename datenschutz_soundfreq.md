@@ -84,3 +84,29 @@ DATENSCHUTZERKLÄRUNG – SOUNDFREQ
   services, analytics, or advertising are used.
 
   Contact: daniel@zebrazeh.de
+
+  -
+
+  POLITIQUE DE CONFIDENTIALITÉ – SOUNDFREQ
+Date : mai 2026
+
+Responsable du traitement
+Daniel Menzel
+E-mail : daniel@zebrazeh.de
+Site web : https://zebrazeh.de
+Quelles données sont traitées ?
+SoundFreq ne traite aucune donnée personnelle. L'application ne stocke, ne transmet et ne partage aucune donnée avec des tiers.
+Accès au microphone
+SoundFreq nécessite l'accès au microphone de l'appareil afin d'analyser les signaux audio en temps réel par fréquence. L'enregistrement audio s'effectue exclusivement en local sur l'appareil. Aucune donnée audio n'est stockée, enregistrée ou transmise.
+La base juridique du traitement est l'art. 6, paragraphe 1, point a) du RGPD (consentement). Vous accordez votre consentement en confirmant l'autorisation d'accès au microphone lors du premier démarrage de l'application. Vous pouvez retirer votre consentement à tout moment en désactivant l'accès au microphone pour SoundFreq dans les réglages iOS.
+Absence de transmission à des tiers
+Aucune donnée n'est transmise à des tiers. L'application ne contient aucun service d'analyse, de publicité ou de suivi.
+Aucun cookie, aucun serveur
+SoundFreq ne communique avec aucun serveur. Aucun cookie ni technologie comparable n'est utilisé.
+Durée de conservation
+Aucune donnée n'étant stockée, la question de la durée de conservation ne se pose pas.
+Vos droits (RGPD)
+Vous disposez du droit d'accès, de rectification, d'effacement et de limitation du traitement de vos données personnelles, ainsi que du droit à la portabilité des données. SoundFreq ne traitant aucune donnée personnelle, ces droits ne sont pas applicables en pratique.
+Vous avez également le droit d'introduire une réclamation auprès d'une autorité de contrôle de la protection des données.
+Contact
+Pour toute question relative à la présente politique de confidentialité, veuillez contacter : daniel@zebrazeh.de
