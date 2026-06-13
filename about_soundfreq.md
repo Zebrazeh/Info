@@ -18,7 +18,7 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
 ## About
 
-SoundFreq ist ein Gitarren-Stimmgerät für iPhone. Es erkennt Töne in Echtzeit über das Mikrofon und zeigt dir, ob deine Saiten richtig gestimmt sind.
+SoundFreq alias "Tune Master" ist ein Gitarren-Stimmgerät für iPhone. Es erkennt Töne in Echtzeit über das Mikrofon und zeigt dir, ob deine Saiten richtig gestimmt sind.
 
   Im normalen Modus erkennt SoundFreq einzelne Töne und zeigt dir den nächsten Notennamen sowie die Abweichung in Cent. Ideal zum Stimmen Saite für Saite.
 
@@ -32,7 +32,7 @@ SoundFreq ist ein Gitarren-Stimmgerät für iPhone. Es erkennt Töne in Echtzeit
   ---
   English
 
-  SoundFreq is a guitar tuner for iPhone. It detects notes in real time via the microphone and shows you whether your strings are in tune.
+  SoundFreq alias "Tune Master" is a guitar tuner for iPhone. It detects notes in real time via the microphone and shows you whether your strings are in tune.
 
   In standard mode, SoundFreq detects single notes and shows you the nearest note name and deviation in cents. Ideal for tuning string by string.
 
@@ -46,7 +46,7 @@ SoundFreq ist ein Gitarren-Stimmgerät für iPhone. Es erkennt Töne in Echtzeit
   ---
   Français
   
-  SoundFreq est un accordeur de guitare pour iPhone. Il détecte les notes en temps réel via le microphone et vous indique si vos cordes sont bien accordées.
+  SoundFreq alias "Tune Master" est un accordeur de guitare pour iPhone. Il détecte les notes en temps réel via le microphone et vous indique si vos cordes sont bien accordées.
 
   En mode standard, SoundFreq détecte les notes individuelles et affiche le nom de la note la plus proche ainsi que l'écart en centièmes. Idéal pour accorder corde par corde.
 
@@ -60,7 +60,7 @@ SoundFreq ist ein Gitarren-Stimmgerät für iPhone. Es erkennt Töne in Echtzeit
   ---
   Español
   
-  SoundFreq es un afinador de guitarra para iPhone. Detecta notas en tiempo real a través del micrófono y te muestra si tus cuerdas están afinadas.
+  SoundFreq alias "Tune Master" es un afinador de guitarra para iPhone. Detecta notas en tiempo real a través del micrófono y te muestra si tus cuerdas están afinadas.
 
   En el modo estándar, SoundFreq detecta notas individuales y muestra el nombre de la nota más cercana y la desviación en centésimas. Ideal para afinar cuerda por cuerda.
 
