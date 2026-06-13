@@ -10,9 +10,9 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
 ---
 
-**Datenschutz:** https://zebrazeh.github.io/Info/datenschutz_soundfreq
+**Datenschutz:** <https://zebrazeh.github.io/Info/datenschutz_soundfreq>
 
-**Impressum:** http://zebrazeh.de?page_id=2
+**Impressum:** <http://zebrazeh.de?page_id=2>
 
 ---
 
