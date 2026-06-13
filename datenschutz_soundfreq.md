@@ -14,7 +14,7 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
 ---
 
-##DATENSCHUTZERKLÄRUNG – SOUNDFREQ
+## DATENSCHUTZERKLÄRUNG – SOUNDFREQ
  Stand: Mai 2026
 
   1. Verantwortlicher
