@@ -14,7 +14,7 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
 ---
 
-## DATENSCHUTZERKLÄRUNG – SOUNDFREQ
+## DATENSCHUTZERKLÄRUNG – SOUNDFREQ Alias "Tune Master"
  Stand: Mai 2026
 
   1. Verantwortlicher
@@ -89,7 +89,7 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
   —
 
-  Privacy Policy – SoundFreq (English)
+  Privacy Policy – SoundFreq (English) alias "Tune Master"
 
   SoundFreq does not collect, store, or transmit any personal data.
 
@@ -103,7 +103,7 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
   -
 
-  POLITIQUE DE CONFIDENTIALITÉ – SOUNDFREQ
+  POLITIQUE DE CONFIDENTIALITÉ – SOUNDFREQ alias "Tune Master"
 Date : mai 2026
 
 Responsable du traitement
@@ -129,7 +129,7 @@ Pour toute question relative à la présente politique de confidentialité, veui
 
 -
 
-POLÍTICA DE PRIVACIDAD – SOUNDFREQ
+POLÍTICA DE PRIVACIDAD – SOUNDFREQ alias "Tune Master"
 
 Fecha: mayo de 2026
 
