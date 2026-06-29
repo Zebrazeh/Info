@@ -16,9 +16,9 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
 ---
 
-## Über PhotoResize
+## Über PhotoShrink
 
-PhotoResize verkleinert deine Fotos in Sekunden auf eine gewünschte Dateigröße – direkt aus dem iOS-Teilen-Menü, ohne Umwege über andere Apps. Wähle ein Foto, tippe auf Teilen, wähle PhotoResize und eine Zielgröße. Die App komprimiert das Bild lokal auf deinem Gerät und speichert die verkleinerte Version in deiner Fotomediathek.
+PhotoShrink verkleinert deine Fotos in Sekunden auf eine gewünschte Dateigröße – direkt aus dem iOS-Teilen-Menü, ohne Umwege über andere Apps. Wähle ein Foto, tippe auf Teilen, wähle PhotoShrink und eine Zielgröße. Die App komprimiert das Bild lokal auf deinem Gerät und speichert die verkleinerte Version in deiner Fotomediathek.
 
 **Funktionen:**
 - Verkleinern direkt aus dem Teilen-Menü und der Aktionen-Liste
@@ -36,7 +36,7 @@ Die App speichert, überträgt oder teilt keinerlei Daten. Alle Berechnungen erf
 ---
 English
 
-PhotoResize shrinks your photos to a target file size in seconds – right from the iOS Share Sheet, with no detour through other apps. Pick a photo, tap Share, choose PhotoResize and a target size. The app compresses the image locally on your device and saves the smaller version to your photo library.
+PhotoShrink shrinks your photos to a target file size in seconds – right from the iOS Share Sheet, with no detour through other apps. Pick a photo, tap Share, choose PhotoShrink and a target size. The app compresses the image locally on your device and saves the smaller version to your photo library.
 
 **Features:**
 - Resize straight from the Share Sheet and the Actions list
@@ -54,7 +54,7 @@ The app does not store, transmit, or share any data. All calculations are perfor
 ---
 Français
 
-PhotoResize réduit vos photos à la taille de fichier souhaitée en quelques secondes – directement depuis le menu Partager d'iOS, sans passer par d'autres apps. Choisissez une photo, appuyez sur Partager, sélectionnez PhotoResize et une taille cible. L'app compresse l'image localement sur votre appareil et enregistre la version réduite dans votre photothèque.
+PhotoShrink réduit vos photos à la taille de fichier souhaitée en quelques secondes – directement depuis le menu Partager d'iOS, sans passer par d'autres apps. Choisissez une photo, appuyez sur Partager, sélectionnez PhotoShrink et une taille cible. L'app compresse l'image localement sur votre appareil et enregistre la version réduite dans votre photothèque.
 
 **Fonctionnalités :**
 - Réduction directement depuis le menu Partager et la liste des Actions
@@ -72,7 +72,7 @@ L'application ne stocke, ne transmet ni ne partage aucune donnée. Tous les calc
 ---
 Español
 
-PhotoResize reduce tus fotos al tamaño de archivo deseado en segundos, directamente desde el menú Compartir de iOS, sin rodeos por otras apps. Elige una foto, toca Compartir, selecciona PhotoResize y un tamaño objetivo. La app comprime la imagen localmente en tu dispositivo y guarda la versión reducida en tu fototeca.
+PhotoShrink reduce tus fotos al tamaño de archivo deseado en segundos, directamente desde el menú Compartir de iOS, sin rodeos por otras apps. Elige una foto, toca Compartir, selecciona PhotoShrink y un tamaño objetivo. La app comprime la imagen localmente en tu dispositivo y guarda la versión reducida en tu fototeca.
 
 **Funciones:**
 - Reducción directamente desde el menú Compartir y la lista de Acciones
