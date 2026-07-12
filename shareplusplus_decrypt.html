@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Share++</title>
+<style>
+  /* Ein Werkzeug, kein Produkt: die Seite existiert für genau eine Handlung.
+     Gestaltungsidee: das Interface IST der Übergabemoment — eine Brücke aus
+     zwei Ufern (Absender/Empfänger), der Fortschrittsbalken ist die Brücke. */
+  :root{
+    --ink:#101418; --paper:#f6f7f4; --line:#c9cec6;
+    --bridge:#0e5a4a; --bridge-2:#12735f; --warn:#8a3b12;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#e8ebe6; --paper:#101413; --line:#2c332f; --bridge:#39b596; --bridge-2:#2c8f77; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100svh; display:grid; place-items:center;
+    background:var(--paper); color:var(--ink);
+    font:400 16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  main{width:min(30rem,92vw); padding:2rem 0 3rem}
+  h1{font-size:1.05rem; letter-spacing:.14em; text-transform:uppercase; font-weight:600; margin:0 0 .25rem}
+  .file{font-size:1.6rem; font-weight:650; overflow-wrap:anywhere; margin:0 0 1.5rem}
+  .bridge{position:relative; height:56px; margin:0 0 1rem}
+  .bank{position:absolute; bottom:0; width:14px; height:26px; background:var(--ink); border-radius:3px 3px 0 0; opacity:.85}
+  .bank.l{left:0} .bank.r{right:0}
+  .span{position:absolute; left:14px; right:14px; bottom:18px; height:8px; background:var(--line); border-radius:4px; overflow:hidden}
+  .span i{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--bridge),var(--bridge-2)); transition:width .2s ease}
+  .status{min-height:3em; font-variant-numeric:tabular-nums}
+  .status[data-kind="error"]{color:var(--warn)}
+  button{
+    appearance:none; border:1.5px solid var(--ink); background:transparent; color:var(--ink);
+    font:inherit; font-weight:600; padding:.7rem 1.2rem; border-radius:.6rem; cursor:pointer;
+  }
+  button:focus-visible{outline:3px solid var(--bridge); outline-offset:2px}
+  .privacy{margin-top:2.25rem; font-size:.82rem; color:color-mix(in oklab,var(--ink) 65%,transparent)}
+  @media (prefers-reduced-motion: reduce){ .span i{transition:none} }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="brand">Share++</h1>
+  <p class="file" id="filename">…</p>
+  <div class="bridge" aria-hidden="true">
+    <span class="bank l"></span><span class="bank r"></span>
+    <span class="span"><i id="bar"></i></span>
+  </div>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <button id="go" hidden></button>
+  <p class="privacy" id="privacy"></p>
+</main>
+
+<script type="module">
+/* AirBridge Tresor-Decryptor — Gegenstück zu .abx v1 (docs/FORMAT_ABX.md).
+   Sicherheitsmodell:
+   - Schlüssel & URL stehen NUR im Fragment (#…) → verlassen den Browser nie.
+   - Ciphertext kommt direkt vom Apple-CDN, Entschlüsselung lokal (WebCrypto).
+   - Kein Storage, keine Cookies, kein Netzwerkziel außer der Datei-URL. */
+
+const T = {
+  en:{scan:"Nothing to open. Scan the QR code on the sender's iPhone.",
+      dl:"Downloading",dec:"Decrypting",done:"Ready — your download has started.",
+      redo:"Save again",go:"Download and decrypt",
+      auth:"Integrity check failed. The link may be damaged or tampered with — ask the sender to share again.",
+      gone:"This share has ended. Ask the sender to show a new code.",
+      net:"Could not reach the file. Check your connection and retry.",
+      priv:"Decryption happens on this device. The key in this link is never sent anywhere. Don't forward this link."},
+  de:{scan:"Nichts zu öffnen. Scanne den QR-Code auf dem iPhone des Absenders.",
+      dl:"Wird geladen",dec:"Wird entschlüsselt",done:"Fertig — dein Download hat begonnen.",
+      redo:"Erneut sichern",go:"Laden und entschlüsseln",
+      auth:"Integritätsprüfung fehlgeschlagen. Der Link ist beschädigt oder manipuliert — bitte neu teilen lassen.",
+      gone:"Diese Freigabe ist beendet. Bitte einen neuen Code anzeigen lassen.",
+      net:"Datei nicht erreichbar. Verbindung prüfen und erneut versuchen.",
+      priv:"Die Entschlüsselung passiert auf diesem Gerät. Der Schlüssel im Link wird nirgendwohin gesendet. Link nicht weitergeben."},
+  fr:{scan:"Rien à ouvrir. Scannez le code QR sur l'iPhone de l'expéditeur.",
+      dl:"Téléchargement",dec:"Déchiffrement",done:"Terminé — votre téléchargement a commencé.",
+      redo:"Enregistrer à nouveau",go:"Télécharger et déchiffrer",
+      auth:"Échec du contrôle d'intégrité. Le lien est endommagé ou altéré — demandez un nouveau partage.",
+      gone:"Ce partage est terminé. Demandez un nouveau code.",
+      net:"Fichier inaccessible. Vérifiez la connexion et réessayez.",
+      priv:"Le déchiffrement s'effectue sur cet appareil. La clé du lien n'est jamais envoyée. Ne transférez pas ce lien."},
+  es:{scan:"Nada que abrir. Escanea el código QR en el iPhone del remitente.",
+      dl:"Descargando",dec:"Descifrando",done:"Listo — tu descarga ha comenzado.",
+      redo:"Guardar de nuevo",go:"Descargar y descifrar",
+      auth:"Falló la comprobación de integridad. El enlace está dañado o manipulado — pide que lo compartan de nuevo.",
+      gone:"Este envío ha finalizado. Pide que muestren un código nuevo.",
+      net:"No se pudo acceder al archivo. Comprueba la conexión y reintenta.",
+      priv:"El descifrado ocurre en este dispositivo. La clave del enlace nunca se envía. No reenvíes este enlace."}
+};
+const lang = (navigator.language||"en").slice(0,2);
+const t = T[lang] ?? T.en;
+document.documentElement.lang = lang in T ? lang : "en";
+document.getElementById("privacy").textContent = t.priv;
+
+const $ = id => document.getElementById(id);
+const b64u = s => Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")
+                  .padEnd(Math.ceil(s.length/4)*4,"=")), c=>c.charCodeAt(0));
+
+const params = new URLSearchParams(location.hash.slice(1));
+const enc = {
+  url:  params.get("u") ? new TextDecoder().decode(b64u(params.get("u"))) : null,
+  key:  params.get("k") ? b64u(params.get("k")) : null,
+  name: params.get("n") ? new TextDecoder().decode(b64u(params.get("n"))) : "file",
+  size: Number(params.get("s")||0)
+};
+
+if (!enc.url || !enc.key || enc.key.length !== 32) {
+  $("status").textContent = t.scan;
+} else {
+  $("filename").textContent = enc.name;
+  const go = $("go");
+  go.textContent = t.go; go.hidden = false;
+  go.addEventListener("click", () => run().catch(fail));
+}
+
+function fail(e){
+  const s = $("status"); s.dataset.kind = "error";
+  s.textContent = e && e.name === "OperationError" ? t.auth
+                : e && e.message === "GONE" ? t.gone : t.net;
+  const go = $("go"); go.hidden = false; go.textContent = t.go;
+}
+
+async function run(){
+  $("go").hidden = true;
+  const s = $("status"), bar = $("bar");
+
+  s.textContent = t.dl + "…";
+  const resp = await fetch(enc.url, { referrerPolicy: "no-referrer" });
+  if (resp.status === 404 || resp.status === 403) throw new Error("GONE");
+  if (!resp.ok) throw new Error("NET");
+  const buf = new Uint8Array(await streamWithProgress(resp, bar));
+
+  s.textContent = t.dec + "…";
+  const plain = await decryptABX(buf, enc.key, p => bar.style.width = (50+p*50)+"%");
+
+  const blob = new Blob([plain]);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = enc.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 60_000);
+
+  bar.style.width = "100%";
+  s.textContent = t.done;
+  const go = $("go"); go.hidden = false; go.textContent = t.redo;
+}
+
+async function streamWithProgress(resp, bar){
+  const total = Number(resp.headers.get("content-length")) || enc.size || 0;
+  const reader = resp.body.getReader();
+  const parts = []; let got = 0;
+  for(;;){
+    const {done, value} = await reader.read();
+    if (done) break;
+    parts.push(value); got += value.length;
+    if (total) bar.style.width = (got/total*50) + "%";
+  }
+  const out = new Uint8Array(got); let o = 0;
+  for (const p of parts){ out.set(p, o); o += p.length; }
+  return out.buffer;
+}
+
+/* .abx v1: 26-Byte-Header, dann Chunks aus ciphertext||tag.
+   AAD = "ABX1"|ver|suite|index(BE32)|isLast — muss bytegenau zu Swift passen. */
+async function decryptABX(bytes, rawKey, onProgress){
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (bytes.length < 26) throw new Error("NET");
+  const magicOK = bytes[0]===0x41 && bytes[1]===0x42 && bytes[2]===0x58 && bytes[3]===0x31;
+  if (!magicOK || bytes[4]!==0x01 || bytes[5]!==0x01) throw {name:"OperationError"};
+  const chunkSize = dv.getUint32(6);
+  const total = dv.getBigUint64(10);
+  const noncePrefix = bytes.slice(18,26);
+
+  const key = await crypto.subtle.importKey("raw", rawKey, "AES-GCM", false, ["decrypt"]);
+  const out = new Uint8Array(Number(total));
+  let offset = 26, produced = 0n, index = 0;
+
+  for(;;){
+    const remaining = total - produced;
+    const plainLen = remaining < BigInt(chunkSize) ? Number(remaining) : chunkSize;
+    const isLast = remaining <= BigInt(chunkSize);
+    const end = offset + plainLen + 16;
+    if (end > bytes.length) throw {name:"OperationError"};
+
+    const iv = new Uint8Array(12);
+    iv.set(noncePrefix); new DataView(iv.buffer).setUint32(8, index);
+    const aad = new Uint8Array(11);
+    aad.set([0x41,0x42,0x58,0x31,0x01,0x01]);
+    new DataView(aad.buffer).setUint32(6, index);
+    aad[10] = isLast ? 1 : 0;
+
+    const plain = await crypto.subtle.decrypt(
+      { name:"AES-GCM", iv, additionalData: aad, tagLength: 128 },
+      key, bytes.subarray(offset, end)
+    ); // wirft OperationError bei Manipulation
+
+    out.set(new Uint8Array(plain), Number(produced));
+    produced += BigInt(plainLen); offset = end; index++;
+    onProgress(Number(produced) / Math.max(Number(total), 1));
+    if (isLast) break;
+  }
+  if (offset !== bytes.length || produced !== total) throw {name:"OperationError"};
+  return out;
+}
+</script>
+</body>
+</html>
