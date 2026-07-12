@@ -32,6 +32,8 @@
   .span i{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--bridge),var(--bridge-2)); transition:width .2s ease}
   .status{min-height:3em; font-variant-numeric:tabular-nums}
   .status[data-kind="error"]{color:var(--warn)}
+  .imagewrap{margin:0 0 1rem}
+  .imagewrap img{max-width:100%; display:block; border-radius:.6rem}
   button{
     appearance:none; border:1.5px solid var(--ink); background:transparent; color:var(--ink);
     font:inherit; font-weight:600; padding:.7rem 1.2rem; border-radius:.6rem; cursor:pointer;
@@ -49,6 +51,7 @@
     <span class="bank l"></span><span class="bank r"></span>
     <span class="span"><i id="bar"></i></span>
   </div>
+  <div id="imageWrap" class="imagewrap" hidden></div>
   <p class="status" id="status" role="status" aria-live="polite"></p>
   <button id="go" hidden></button>
   <p class="privacy" id="privacy"></p>
@@ -64,6 +67,7 @@
 const T = {
   en:{scan:"Nothing to open. Scan the QR code on the sender's iPhone.",
       dl:"Downloading",dec:"Decrypting",done:"Ready — your download has started.",
+      doneImage:"Ready — press and hold the image to save it to Photos.",
       redo:"Save again",go:"Download and decrypt",
       auth:"Integrity check failed. The link may be damaged or tampered with — ask the sender to share again.",
       gone:"This share has ended. Ask the sender to show a new code.",
@@ -71,6 +75,7 @@ const T = {
       priv:"Decryption happens on this device. The key in this link is never sent anywhere. Don't forward this link."},
   de:{scan:"Nichts zu öffnen. Scanne den QR-Code auf dem iPhone des Absenders.",
       dl:"Wird geladen",dec:"Wird entschlüsselt",done:"Fertig — dein Download hat begonnen.",
+      doneImage:"Fertig — halte das Bild gedrückt, um es in Fotos zu speichern.",
       redo:"Erneut sichern",go:"Laden und entschlüsseln",
       auth:"Integritätsprüfung fehlgeschlagen. Der Link ist beschädigt oder manipuliert — bitte neu teilen lassen.",
       gone:"Diese Freigabe ist beendet. Bitte einen neuen Code anzeigen lassen.",
@@ -78,6 +83,7 @@ const T = {
       priv:"Die Entschlüsselung passiert auf diesem Gerät. Der Schlüssel im Link wird nirgendwohin gesendet. Link nicht weitergeben."},
   fr:{scan:"Rien à ouvrir. Scannez le code QR sur l'iPhone de l'expéditeur.",
       dl:"Téléchargement",dec:"Déchiffrement",done:"Terminé — votre téléchargement a commencé.",
+      doneImage:"Terminé — maintenez l'image appuyée pour l'enregistrer dans Photos.",
       redo:"Enregistrer à nouveau",go:"Télécharger et déchiffrer",
       auth:"Échec du contrôle d'intégrité. Le lien est endommagé ou altéré — demandez un nouveau partage.",
       gone:"Ce partage est terminé. Demandez un nouveau code.",
@@ -85,6 +91,7 @@ const T = {
       priv:"Le déchiffrement s'effectue sur cet appareil. La clé du lien n'est jamais envoyée. Ne transférez pas ce lien."},
   es:{scan:"Nada que abrir. Escanea el código QR en el iPhone del remitente.",
       dl:"Descargando",dec:"Descifrando",done:"Listo — tu descarga ha comenzado.",
+      doneImage:"Listo — mantén pulsada la imagen para guardarla en Fotos.",
       redo:"Guardar de nuevo",go:"Descargar y descifrar",
       auth:"Falló la comprobación de integridad. El enlace está dañado o manipulado — pide que lo compartan de nuevo.",
       gone:"Este envío ha finalizado. Pide que muestren un código nuevo.",
@@ -137,16 +144,43 @@ async function run(){
   s.textContent = t.dec + "…";
   const plain = await decryptABX(buf, enc.key, p => bar.style.width = (50+p*50)+"%");
 
-  const blob = new Blob([plain]);
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = enc.name;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 60_000);
-
   bar.style.width = "100%";
-  s.textContent = t.done;
+  const imageType = guessImageType(enc.name);
+
+  if (imageType) {
+    // <img> statt <a download>: iOS/Android bieten beim Long-Press auf ein
+    // Bild direkt "In Fotos sichern" an. Ein programmatischer Download-Link
+    // landet dagegen immer im Download-/Dateien-Ordner, nie in der
+    // Fotomediathek — genau das war die urspruengliche Nutzerbeschwerde.
+    const blob = new Blob([plain], { type: imageType });
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(blob);
+    img.alt = enc.name;
+    const wrap = $("imageWrap");
+    wrap.replaceChildren(img); // ersetzt statt zu stapeln, falls "Erneut sichern"
+    wrap.hidden = false;
+    s.textContent = t.doneImage;
+  } else {
+    const blob = new Blob([plain]);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = enc.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 60_000);
+    s.textContent = t.done;
+  }
+
   const go = $("go"); go.hidden = false; go.textContent = t.redo;
+}
+
+const IMAGE_TYPES = {
+  jpg:"image/jpeg", jpeg:"image/jpeg", png:"image/png", gif:"image/gif",
+  webp:"image/webp", heic:"image/heic", heif:"image/heif",
+  bmp:"image/bmp", tiff:"image/tiff", tif:"image/tiff"
+};
+function guessImageType(name){
+  const ext = name.split(".").pop()?.toLowerCase();
+  return IMAGE_TYPES[ext] ?? null;
 }
 
 async function streamWithProgress(resp, bar){
