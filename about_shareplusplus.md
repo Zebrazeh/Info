@@ -10,7 +10,7 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
 ---
 
-**Datenschutz:** <https://zebrazeh.github.io/Info/datenschutz_airbridge>
+**Datenschutz:** <https://zebrazeh.github.io/Info/datenschutz_shareplusplus>
 
 **Impressum:** <http://zebrazeh.de?page_id=2>
 
