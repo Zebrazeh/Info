@@ -33,7 +33,10 @@ Die von dir zum Teilen ausgewählte Datei (Foto, Dokument oder Link) wird für d
 
 Die Datei wird unter einem zufällig erzeugten, praktisch nicht erratbaren Namen abgelegt und ist ausschließlich über einen kurzlebigen, individuellen Link erreichbar, der im QR-Code steckt. Sie wird gelöscht, sobald du die Freigabe beendest, spätestens jedoch automatisch nach Ablauf der Anzeigezeit (2 Minuten) bzw. beim nächsten Start der App (Sicherheitsnetz, falls die Freigabe unterbrochen wurde, etwa durch Abstürzen der App).
 
-Im aktuellen „Blitz-Modus" liegt die Datei bei Apple unverschlüsselt, aber ausschließlich über eine gesicherte HTTPS-Verbindung übertragen. Das ist ein bewusster Kompromiss zwischen Einfachheit und Schutzniveau, kein Versehen – siehe Punkt 7.
+Du wählst zwischen zwei Modi (Standard: Tresor):
+
+- **Tresor (Standard):** Die Datei wird direkt auf deinem Gerät verschlüsselt (AES-256-GCM), bevor sie hochgeladen wird. Bei Apple liegt ausschließlich der verschlüsselte Inhalt – der Schlüssel verlässt dein Gerät nur als Teil des QR-Codes und wird nie an einen Server übertragen. Nur wer den QR-Code scannt, kann die Datei lesen.
+- **Blitz:** Schneller, aber ohne eigene Verschlüsselung – die Datei liegt für die kurze Dauer der Übergabe im Klartext bei Apple, übertragen ausschließlich über eine gesicherte HTTPS-Verbindung. Ein bewusster, optionaler Kompromiss zwischen Geschwindigkeit und Schutzniveau, kein Versehen – siehe Punkt 7.
 
 **4. Wer verarbeitet die Daten?**
 
@@ -49,10 +52,11 @@ Die Verarbeitung erfolgt zur Erfüllung der von dir gewünschten Funktion (Art. 
 
 **7. Sicherheit**
 
-- Datenübertragung ausschließlich über HTTPS/TLS.
-- Zufällige, 128-Bit-Record-Namen verhindern das Erraten fremder Freigaben.
-- Sofortlöschung bei Ende der Freigabe, zusätzliches Sicherheitsnetz beim App-Start.
-- Kein Schutz gegen Zugriff durch Apple selbst oder gegen an Apple gerichtete behördliche Anfragen während der kurzen Freigabedauer im Blitz-Modus – ein bewusst dokumentierter Kompromiss, kein Versehen. Eine Ende-zu-Ende-verschlüsselte Variante ist als mögliche künftige Funktion vorgesehen, aber noch nicht Teil der App.
+- Tresor-Modus: Ende-zu-Ende-Verschlüsselung (AES-256-GCM). Apple sieht ausschließlich den verschlüsselten Inhalt; der Schlüssel steckt nur im QR-Code/Link und wird nirgendwo gespeichert oder protokolliert.
+- Blitz-Modus: Datenübertragung ausschließlich über HTTPS/TLS, kein zusätzlicher Verschlüsselungsschritt durch die App.
+- Zufällige, 128-Bit-Record-Namen verhindern das Erraten fremder Freigaben (beide Modi).
+- Sofortlöschung bei Ende der Freigabe, zusätzliches Sicherheitsnetz beim App-Start (beide Modi).
+- Im Blitz-Modus: kein Schutz gegen Zugriff durch Apple selbst oder gegen an Apple gerichtete behördliche Anfragen während der kurzen Freigabedauer – ein bewusst dokumentierter Kompromiss, kein Versehen. Im Tresor-Modus entfällt dieses Risiko, da Apple ausschließlich verschlüsselte Daten sieht.
 
 **8. Keine Konten, kein Tracking**
 
@@ -81,7 +85,10 @@ As of: July 2026
 
 **What data is processed:** The file you choose to share is temporarily held via Apple's CloudKit service for the duration of the handover — typically a few minutes. Share++ does not operate its own server; Apple is the sole data processor involved. The file is stored under a randomly generated, effectively unguessable name and is reachable only via a short-lived link embedded in the QR code. It is deleted as soon as you end the share, or at the latest when the on-screen timer (2 minutes) runs out, or on the app's next launch (a safety net in case the share was interrupted).
 
-In the current "Blitz" mode, the file sits unencrypted at Apple, transmitted only over a secured HTTPS connection. This is a deliberate trade-off between simplicity and protection level, not an oversight.
+You choose between two modes (default: Vault):
+
+- **Vault (default):** The file is encrypted on your device (AES-256-GCM) before it's uploaded. Apple only ever holds the encrypted content — the key leaves your device solely as part of the QR code and is never transmitted to any server. Only whoever scans the QR code can read the file.
+- **Flash:** Faster, but without the app's own encryption — the file sits in plain form at Apple for the short duration of the handover, transmitted only over a secured HTTPS connection. A deliberate, optional trade-off between speed and protection level, not an oversight.
 
 **Who processes the data:** Apple (Apple Distribution International, Ireland, or Apple Inc., USA) acts as a data processor under the Apple Developer Program License Agreement. Share++ runs no server infrastructure of its own and logs no content.
 
@@ -89,7 +96,7 @@ In the current "Blitz" mode, the file sits unencrypted at Apple, transmitted onl
 
 **Legal basis:** Processing occurs to fulfil the function you requested (Art. 6(1)(b) GDPR — performance of a contract / pre-contractual measure). There is no tracking, advertising, or analytics, so no consent banner is required.
 
-**Security:** HTTPS/TLS only; random 128-bit record names; immediate deletion at share end plus an app-launch safety-net sweep. No protection against access by Apple itself or by authorities addressing Apple during the short Blitz-mode sharing window — a documented trade-off, not an oversight. An end-to-end encrypted mode is a possible future feature, not yet part of the app.
+**Security:** Vault mode: end-to-end encryption (AES-256-GCM). Apple only ever sees the encrypted content; the key lives only in the QR code/link and is never stored or logged anywhere. Flash mode: HTTPS/TLS transport only, no additional encryption step by the app. Random 128-bit record names prevent guessing other people's shares (both modes). Immediate deletion at share end, plus an app-launch safety-net sweep (both modes). In Flash mode: no protection against access by Apple itself or by authorities addressing Apple during the short sharing window — a documented trade-off, not an oversight. In Vault mode this risk doesn't apply, since Apple only ever sees encrypted data.
 
 **No accounts, no tracking:** Share++ requires no sign-up or login. No third-party SDKs, advertising, or analytics services are included.
 
@@ -110,7 +117,10 @@ Date : juillet 2026
 
 **Quelles données sont traitées :** Le fichier que vous choisissez de partager est temporairement conservé via le service CloudKit d'Apple pendant la durée du transfert — généralement quelques minutes. Share++ n'exploite aucun serveur propre ; Apple est le seul sous-traitant impliqué. Le fichier est stocké sous un nom généré aléatoirement, pratiquement impossible à deviner, et n'est accessible que via un lien éphémère intégré au code QR. Il est supprimé dès que vous terminez le partage, ou au plus tard lorsque le minuteur à l'écran (2 minutes) expire, ou au prochain lancement de l'application (filet de sécurité en cas d'interruption du partage).
 
-En mode « Blitz » actuel, le fichier reste en clair chez Apple, transmis uniquement via une connexion HTTPS sécurisée. Il s'agit d'un compromis délibéré entre simplicité et niveau de protection, pas d'un oubli.
+Vous choisissez entre deux modes (par défaut : Coffre-fort) :
+
+- **Coffre-fort (par défaut) :** le fichier est chiffré sur votre appareil (AES-256-GCM) avant d'être envoyé. Apple ne reçoit que le contenu chiffré — la clé ne quitte votre appareil que dans le code QR et n'est jamais transmise à un serveur. Seule la personne qui scanne le code QR peut lire le fichier.
+- **Éclair :** plus rapide, mais sans chiffrement propre à l'application — le fichier reste en clair chez Apple pendant la courte durée du transfert, transmis uniquement via une connexion HTTPS sécurisée. Un compromis délibéré et optionnel entre rapidité et niveau de protection, pas un oubli.
 
 **Qui traite les données :** Apple (Apple Distribution International, Irlande, ou Apple Inc., États-Unis) agit en tant que sous-traitant dans le cadre de l'Apple Developer Program License Agreement. Share++ n'exploite aucune infrastructure serveur propre et n'enregistre aucun contenu.
 
@@ -118,7 +128,7 @@ En mode « Blitz » actuel, le fichier reste en clair chez Apple, transmis uniqu
 
 **Base juridique :** Le traitement est effectué pour exécuter la fonction que vous avez demandée (art. 6, § 1, point b du RGPD — exécution d'un contrat ou mesure précontractuelle). Aucun suivi, aucune publicité, aucune analyse n'est effectué : aucune bannière de consentement n'est donc requise.
 
-**Sécurité :** HTTPS/TLS uniquement ; noms d'enregistrement aléatoires sur 128 bits ; suppression immédiate à la fin du partage, complétée par un filet de sécurité au lancement de l'application. Aucune protection contre un accès par Apple lui-même ou par des autorités s'adressant à Apple pendant la courte fenêtre de partage en mode Blitz — un compromis documenté, pas un oubli. Un mode chiffré de bout en bout est une fonctionnalité future possible, pas encore intégrée à l'application.
+**Sécurité :** Mode Coffre-fort : chiffrement de bout en bout (AES-256-GCM). Apple ne voit que le contenu chiffré ; la clé ne vit que dans le code QR/lien et n'est jamais stockée ni journalisée. Mode Éclair : transmission uniquement via HTTPS/TLS, aucune étape de chiffrement supplémentaire par l'application. Noms d'enregistrement aléatoires sur 128 bits empêchant de deviner les partages d'autrui (les deux modes). Suppression immédiate à la fin du partage, complétée par un filet de sécurité au lancement de l'application (les deux modes). En mode Éclair : aucune protection contre un accès par Apple lui-même ou par des autorités s'adressant à Apple pendant la courte fenêtre de partage — un compromis documenté, pas un oubli. En mode Coffre-fort, ce risque ne s'applique pas, Apple ne voyant que des données chiffrées.
 
 **Pas de compte, pas de suivi :** Share++ ne nécessite ni inscription ni connexion. Aucun SDK tiers, service publicitaire ou d'analyse n'est inclus.
 
@@ -139,7 +149,10 @@ Fecha: julio de 2026
 
 **Qué datos se tratan:** El archivo que eliges compartir se guarda temporalmente a través del servicio CloudKit de Apple durante la duración de la transferencia, normalmente unos minutos. Share++ no opera ningún servidor propio; Apple es el único encargado del tratamiento involucrado. El archivo se almacena con un nombre generado aleatoriamente, prácticamente imposible de adivinar, y solo es accesible mediante un enlace efímero incluido en el código QR. Se elimina en cuanto finalizas el envío, o como muy tarde cuando el temporizador en pantalla (2 minutos) llega a cero, o al siguiente inicio de la app (red de seguridad por si el envío se interrumpe).
 
-En el modo «Blitz» actual, el archivo permanece sin cifrar en Apple, transmitido solo mediante una conexión HTTPS segura. Se trata de un compromiso deliberado entre sencillez y nivel de protección, no de un descuido.
+Eliges entre dos modos (predeterminado: Caja fuerte):
+
+- **Caja fuerte (predeterminado):** el archivo se cifra en tu dispositivo (AES-256-GCM) antes de subirse. Apple solo recibe el contenido cifrado — la clave sale de tu dispositivo únicamente dentro del código QR y nunca se transmite a ningún servidor. Solo quien escanee el código QR puede leer el archivo.
+- **Modo rápido:** más veloz, pero sin cifrado propio de la app — el archivo permanece en texto claro en Apple durante la breve duración de la transferencia, transmitido solo mediante una conexión HTTPS segura. Un compromiso deliberado y opcional entre velocidad y nivel de protección, no un descuido.
 
 **Quién trata los datos:** Apple (Apple Distribution International, Irlanda, o Apple Inc., EE. UU.) actúa como encargado del tratamiento en el marco del Apple Developer Program License Agreement. Share++ no opera infraestructura de servidor propia ni registra contenido alguno.
 
@@ -147,7 +160,7 @@ En el modo «Blitz» actual, el archivo permanece sin cifrar en Apple, transmiti
 
 **Base jurídica:** El tratamiento se realiza para cumplir la función que has solicitado (art. 6, apdo. 1, letra b del RGPD: ejecución de un contrato o medida precontractual). No hay seguimiento, publicidad ni análisis, por lo que no se requiere ningún banner de consentimiento.
 
-**Seguridad:** Solo HTTPS/TLS; nombres de registro aleatorios de 128 bits; eliminación inmediata al finalizar el envío, más una red de seguridad al iniciar la app. Sin protección frente al acceso por parte de Apple o de autoridades que se dirijan a Apple durante la breve ventana de envío en modo Blitz: un compromiso documentado, no un descuido. Un modo cifrado de extremo a extremo es una posible función futura, aún no incluida en la app.
+**Seguridad:** Modo Caja fuerte: cifrado de extremo a extremo (AES-256-GCM). Apple solo ve el contenido cifrado; la clave vive únicamente en el código QR/enlace y nunca se almacena ni se registra. Modo rápido: transmisión solo mediante HTTPS/TLS, sin ningún paso de cifrado adicional por parte de la app. Nombres de registro aleatorios de 128 bits que impiden adivinar los envíos de otras personas (ambos modos). Eliminación inmediata al finalizar el envío, más una red de seguridad al iniciar la app (ambos modos). En modo rápido: sin protección frente al acceso por parte de Apple o de autoridades que se dirijan a Apple durante la breve ventana de envío — un compromiso documentado, no un descuido. En modo Caja fuerte este riesgo no aplica, ya que Apple solo ve datos cifrados.
 
 **Sin cuentas, sin seguimiento:** Share++ no requiere registro ni inicio de sesión. No incluye SDK de terceros ni servicios de publicidad o análisis.
 
