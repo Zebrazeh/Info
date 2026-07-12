@@ -68,6 +68,7 @@ const T = {
   en:{scan:"Nothing to open. Scan the QR code on the sender's iPhone.",
       dl:"Downloading",dec:"Decrypting",done:"Ready — your download has started.",
       doneImage:"Ready — press and hold the image to save it to Photos.",
+      donePdf:"Ready — opening the PDF. Use the share icon there to open it in another app.",
       redo:"Save again",go:"Download and decrypt",
       auth:"Integrity check failed. The link may be damaged or tampered with — ask the sender to share again.",
       gone:"This share has ended. Ask the sender to show a new code.",
@@ -76,6 +77,7 @@ const T = {
   de:{scan:"Nichts zu öffnen. Scanne den QR-Code auf dem iPhone des Absenders.",
       dl:"Wird geladen",dec:"Wird entschlüsselt",done:"Fertig — dein Download hat begonnen.",
       doneImage:"Fertig — halte das Bild gedrückt, um es in Fotos zu speichern.",
+      donePdf:"Fertig — die PDF wird geöffnet. Über das Freigabesymbol dort kannst du sie in einer anderen App öffnen.",
       redo:"Erneut sichern",go:"Laden und entschlüsseln",
       auth:"Integritätsprüfung fehlgeschlagen. Der Link ist beschädigt oder manipuliert — bitte neu teilen lassen.",
       gone:"Diese Freigabe ist beendet. Bitte einen neuen Code anzeigen lassen.",
@@ -84,6 +86,7 @@ const T = {
   fr:{scan:"Rien à ouvrir. Scannez le code QR sur l'iPhone de l'expéditeur.",
       dl:"Téléchargement",dec:"Déchiffrement",done:"Terminé — votre téléchargement a commencé.",
       doneImage:"Terminé — maintenez l'image appuyée pour l'enregistrer dans Photos.",
+      donePdf:"Terminé — ouverture du PDF. Utilisez l'icône de partage pour l'ouvrir dans une autre application.",
       redo:"Enregistrer à nouveau",go:"Télécharger et déchiffrer",
       auth:"Échec du contrôle d'intégrité. Le lien est endommagé ou altéré — demandez un nouveau partage.",
       gone:"Ce partage est terminé. Demandez un nouveau code.",
@@ -92,6 +95,7 @@ const T = {
   es:{scan:"Nada que abrir. Escanea el código QR en el iPhone del remitente.",
       dl:"Descargando",dec:"Descifrando",done:"Listo — tu descarga ha comenzado.",
       doneImage:"Listo — mantén pulsada la imagen para guardarla en Fotos.",
+      donePdf:"Listo — abriendo el PDF. Usa el icono de compartir para abrirlo en otra app.",
       redo:"Guardar de nuevo",go:"Descargar y descifrar",
       auth:"Falló la comprobación de integridad. El enlace está dañado o manipulado — pide que lo compartan de nuevo.",
       gone:"Este envío ha finalizado. Pide que muestren un código nuevo.",
@@ -146,6 +150,7 @@ async function run(){
 
   bar.style.width = "100%";
   const imageType = guessImageType(enc.name);
+  const isPdf = enc.name.split(".").pop()?.toLowerCase() === "pdf";
 
   if (imageType) {
     // <img> statt <a download>: iOS/Android bieten beim Long-Press auf ein
@@ -160,6 +165,16 @@ async function run(){
     wrap.replaceChildren(img); // ersetzt statt zu stapeln, falls "Erneut sichern"
     wrap.hidden = false;
     s.textContent = t.doneImage;
+  } else if (isPdf) {
+    // Navigation statt <a download>: der native PDF-Viewer des Browsers
+    // (iOS/Android) hat ein eigenes Freigabesymbol mit "Öffnen mit …" für
+    // andere Apps. Ein <a download>-Link würde stattdessen immer stumm im
+    // Download-Ordner landen, ohne diese Wahl anzubieten. Kein window.open
+    // (koennte als Popup geblockt werden) — direkte Navigation im selben
+    // Tab ist dagegen nie durch Popup-Blocker betroffen.
+    const blob = new Blob([plain], { type: "application/pdf" });
+    s.textContent = t.donePdf;
+    location.href = URL.createObjectURL(blob);
   } else {
     const blob = new Blob([plain]);
     const a = document.createElement("a");
