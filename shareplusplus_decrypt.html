@@ -34,6 +34,7 @@
   .status[data-kind="error"]{color:var(--warn)}
   .imagewrap{margin:0 0 1rem}
   .imagewrap img{max-width:100%; display:block; border-radius:.6rem}
+  .actionwrap{margin:0 0 1rem}
   button{
     appearance:none; border:1.5px solid var(--ink); background:transparent; color:var(--ink);
     font:inherit; font-weight:600; padding:.7rem 1.2rem; border-radius:.6rem; cursor:pointer;
@@ -52,6 +53,7 @@
     <span class="span"><i id="bar"></i></span>
   </div>
   <div id="imageWrap" class="imagewrap" hidden></div>
+  <div id="actionWrap" class="actionwrap" hidden></div>
   <p class="status" id="status" role="status" aria-live="polite"></p>
   <button id="go" hidden></button>
   <p class="privacy" id="privacy"></p>
@@ -66,36 +68,40 @@
 
 const T = {
   en:{scan:"Nothing to open. Scan the QR code on the sender's iPhone.",
-      dl:"Downloading",dec:"Decrypting",done:"Ready — your download has started.",
+      dl:"Downloading",dec:"Decrypting",done:"Ready — tap below to save the file.",
       doneImage:"Ready — press and hold the image to save it to Photos.",
-      donePdf:"Ready — opening the PDF. Use the share icon there to open it in another app.",
+      donePdf:"Ready — tap below to open the PDF.",
+      openPdf:"Open PDF",saveFile:"Save file",
       redo:"Save again",go:"Download and decrypt",
       auth:"Integrity check failed. The link may be damaged or tampered with — ask the sender to share again.",
       gone:"This share has ended. Ask the sender to show a new code.",
       net:"Could not reach the file. Check your connection and retry.",
       priv:"Decryption happens on this device. The key in this link is never sent anywhere. Don't forward this link."},
   de:{scan:"Nichts zu öffnen. Scanne den QR-Code auf dem iPhone des Absenders.",
-      dl:"Wird geladen",dec:"Wird entschlüsselt",done:"Fertig — dein Download hat begonnen.",
+      dl:"Wird geladen",dec:"Wird entschlüsselt",done:"Fertig — tippe unten, um die Datei zu speichern.",
       doneImage:"Fertig — halte das Bild gedrückt, um es in Fotos zu speichern.",
-      donePdf:"Fertig — die PDF wird geöffnet. Über das Freigabesymbol dort kannst du sie in einer anderen App öffnen.",
+      donePdf:"Fertig — tippe unten, um die PDF zu öffnen.",
+      openPdf:"PDF öffnen",saveFile:"Datei speichern",
       redo:"Erneut sichern",go:"Laden und entschlüsseln",
       auth:"Integritätsprüfung fehlgeschlagen. Der Link ist beschädigt oder manipuliert — bitte neu teilen lassen.",
       gone:"Diese Freigabe ist beendet. Bitte einen neuen Code anzeigen lassen.",
       net:"Datei nicht erreichbar. Verbindung prüfen und erneut versuchen.",
       priv:"Die Entschlüsselung passiert auf diesem Gerät. Der Schlüssel im Link wird nirgendwohin gesendet. Link nicht weitergeben."},
   fr:{scan:"Rien à ouvrir. Scannez le code QR sur l'iPhone de l'expéditeur.",
-      dl:"Téléchargement",dec:"Déchiffrement",done:"Terminé — votre téléchargement a commencé.",
+      dl:"Téléchargement",dec:"Déchiffrement",done:"Terminé — appuyez ci-dessous pour enregistrer le fichier.",
       doneImage:"Terminé — maintenez l'image appuyée pour l'enregistrer dans Photos.",
-      donePdf:"Terminé — ouverture du PDF. Utilisez l'icône de partage pour l'ouvrir dans une autre application.",
+      donePdf:"Terminé — appuyez ci-dessous pour ouvrir le PDF.",
+      openPdf:"Ouvrir le PDF",saveFile:"Enregistrer le fichier",
       redo:"Enregistrer à nouveau",go:"Télécharger et déchiffrer",
       auth:"Échec du contrôle d'intégrité. Le lien est endommagé ou altéré — demandez un nouveau partage.",
       gone:"Ce partage est terminé. Demandez un nouveau code.",
       net:"Fichier inaccessible. Vérifiez la connexion et réessayez.",
       priv:"Le déchiffrement s'effectue sur cet appareil. La clé du lien n'est jamais envoyée. Ne transférez pas ce lien."},
   es:{scan:"Nada que abrir. Escanea el código QR en el iPhone del remitente.",
-      dl:"Descargando",dec:"Descifrando",done:"Listo — tu descarga ha comenzado.",
+      dl:"Descargando",dec:"Descifrando",done:"Listo — toca abajo para guardar el archivo.",
       doneImage:"Listo — mantén pulsada la imagen para guardarla en Fotos.",
-      donePdf:"Listo — abriendo el PDF. Usa el icono de compartir para abrirlo en otra app.",
+      donePdf:"Listo — toca abajo para abrir el PDF.",
+      openPdf:"Abrir PDF",saveFile:"Guardar archivo",
       redo:"Guardar de nuevo",go:"Descargar y descifrar",
       auth:"Falló la comprobación de integridad. El enlace está dañado o manipulado — pide que lo compartan de nuevo.",
       gone:"Este envío ha finalizado. Pide que muestren un código nuevo.",
@@ -166,22 +172,37 @@ async function run(){
     wrap.hidden = false;
     s.textContent = t.doneImage;
   } else if (isPdf) {
-    // Navigation statt <a download>: der native PDF-Viewer des Browsers
-    // (iOS/Android) hat ein eigenes Freigabesymbol mit "Öffnen mit …" für
-    // andere Apps. Ein <a download>-Link würde stattdessen immer stumm im
-    // Download-Ordner landen, ohne diese Wahl anzubieten. Kein window.open
-    // (koennte als Popup geblockt werden) — direkte Navigation im selben
-    // Tab ist dagegen nie durch Popup-Blocker betroffen.
+    // Kein automatisches location.href/window.open mehr: Safe-Browsing-
+    // Scanner werten einen sofortigen, unbeaufsichtigten Sprung auf eine
+    // blob:-URL nach einem Fetch als "drive-by"-Muster und haben
+    // zebrazeh.github.io deswegen komplett gesperrt (Google Safe Browsing,
+    // 2026-07-14). Jetzt erst ein sichtbarer Button, der erst bei echtem
+    // Tap navigiert — eindeutig nutzerausgelöst, kein automatischer Trigger.
     const blob = new Blob([plain], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const btn = document.createElement("button");
+    btn.textContent = t.openPdf;
+    btn.addEventListener("click", () => { location.href = url; });
+    const wrap = $("actionWrap");
+    wrap.replaceChildren(btn);
+    wrap.hidden = false;
     s.textContent = t.donePdf;
-    location.href = URL.createObjectURL(blob);
   } else {
+    // Gleiches Prinzip: kein automatisches a.click() mehr (s. Kommentar
+    // oben bei isPdf) — Button rendern, echter Download erst nach Tap.
     const blob = new Blob([plain]);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = enc.name;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 60_000);
+    const url = URL.createObjectURL(blob);
+    const btn = document.createElement("button");
+    btn.textContent = t.saveFile;
+    btn.addEventListener("click", () => {
+      const a = document.createElement("a");
+      a.href = url; a.download = enc.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 60_000);
+    });
+    const wrap = $("actionWrap");
+    wrap.replaceChildren(btn);
+    wrap.hidden = false;
     s.textContent = t.done;
   }
 
