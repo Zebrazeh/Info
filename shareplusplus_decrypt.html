@@ -146,8 +146,20 @@ async function run(){
   const s = $("status"), bar = $("bar");
 
   s.textContent = t.dl + "…";
-  const resp = await fetch(enc.url, { referrerPolicy: "no-referrer" });
-  if (resp.status === 404 || resp.status === 403) throw new Error("GONE");
+  // cache: "no-store" ist Absicht, nicht Performance-Feinschliff: ohne das
+  // kann ein Gerät, das diese exakte URL schon einmal geladen hat (z. B.
+  // beim Aufnehmen eines Demo-Videos), eine lokal zwischengespeicherte
+  // Antwort bekommen, OHNE den Server erneut zu fragen — die Freigabe
+  // wirkt dann auf diesem einen Gerät noch aktiv, obwohl sie serverseitig
+  // (CloudKit-Record gelöscht bzw. downloadURL-Signatur abgelaufen, s.
+  // docs/PROBES.md T-TTL-PROBE) längst vorbei ist. Jeder Aufruf muss echt
+  // beim CDN nachfragen, sonst unterläuft der Browser-Cache die
+  // Löschzusage aus Rail §5.
+  const resp = await fetch(enc.url, { referrerPolicy: "no-referrer", cache: "no-store" });
+  // 410 Gone: abgelaufene/signierte downloadURL (T-TTL-PROBE, ~18-19 Min.
+  // ab Upload). 404/403: zur Sicherheit mitbehandelt, falls sich Apples
+  // Fehlercode für gelöschte Records je ändert.
+  if (resp.status === 410 || resp.status === 404 || resp.status === 403) throw new Error("GONE");
   if (!resp.ok) throw new Error("NET");
   const buf = new Uint8Array(await streamWithProgress(resp, bar));
 
