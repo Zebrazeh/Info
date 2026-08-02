@@ -1,3 +1,15 @@
+## Support
+
+**Deutsch:** Fragen oder Probleme mit Share++? Schreib an **daniel@zebrazeh.de** — Antwort meist innerhalb von 1–2 Werktagen.
+
+**English:** Questions or issues with Share++? Email **daniel@zebrazeh.de** — usually a reply within 1–2 business days.
+
+**Français :** Des questions ou un problème avec Share++ ? Écrivez à **daniel@zebrazeh.de** — réponse généralement sous 1 à 2 jours ouvrés.
+
+**Español:** ¿Preguntas o problemas con Share++? Escribe a **daniel@zebrazeh.de** — respuesta normalmente en 1-2 días laborables.
+
+---
+
 Wenn Ihnen die App gefällt freue ich mich über einen Kaffee ;-)
 
 If you enjoy the app, I'd love a coffee ;-)
@@ -18,7 +30,7 @@ Si te gusta la aplicación, ¡me alegraría mucho un café ;-)
 
 ## Über Share++
 
-Share++ sendet Fotos, Dateien und Links an jedes Gerät in der Nähe – auch Android, auch ohne eigene App auf der Empfängerseite. Kein Konto, kein eigener Server, keine Einrichtung.
+Share++ sendet Fotos, Dateien und Links an jedes Gerät in der Nähe – ganz ohne App auf der Empfängerseite. Kein Konto, kein eigener Server, keine Einrichtung.
 
 Datei über das Teilen-Menü auswählen, „Share++" wählen – ein QR-Code erscheint. Das andere Gerät scannt ihn einfach mit der Kamera-App und lädt die Datei direkt im Browser herunter.
 
@@ -36,7 +48,7 @@ Du wählst zwischen zwei Modi: Tresor verschlüsselt die Datei direkt auf deinem
 ---
 English
 
-Share++ sends photos, files, and links to any nearby device — even Android, even without an app on the other end. No account, no server of our own, nothing to set up.
+Share++ sends photos, files, and links to any nearby device — no app needed on the other end. No account, no server of our own, nothing to set up.
 
 Pick a file from the Share Sheet, choose "Share++" — a QR code appears. The other device scans it with its camera app and downloads the file straight in the browser.
 
@@ -54,7 +66,7 @@ You choose between two modes: Vault encrypts the file on your device before it's
 ---
 Français
 
-Share++ envoie des photos, fichiers et liens vers n'importe quel appareil à proximité — même Android, même sans application côté destinataire. Pas de compte, pas de serveur propre, rien à configurer.
+Share++ envoie des photos, fichiers et liens vers n'importe quel appareil à proximité — sans aucune application côté destinataire. Pas de compte, pas de serveur propre, rien à configurer.
 
 Choisissez un fichier dans le menu de partage, sélectionnez « Share++ » — un code QR apparaît. L'autre appareil le scanne avec son appareil photo et télécharge le fichier directement dans le navigateur.
 
@@ -72,7 +84,7 @@ Vous choisissez entre deux modes : Coffre-fort chiffre le fichier directement su
 ---
 Español
 
-Share++ envía fotos, archivos y enlaces a cualquier dispositivo cercano, incluso Android, incluso sin ninguna aplicación en el otro extremo. Sin cuenta, sin servidor propio, nada que configurar.
+Share++ envía fotos, archivos y enlaces a cualquier dispositivo cercano, sin ninguna aplicación en el otro extremo. Sin cuenta, sin servidor propio, nada que configurar.
 
 Elige un archivo en el menú compartir, selecciona «Share++» — aparece un código QR. El otro dispositivo lo escanea con su cámara y descarga el archivo directamente en el navegador.
 
