@@ -164,7 +164,7 @@ const fx = {
   begin(dir) {
     this.init();
     this.wantDir = dir;
-    if (this.running() && this.buffers.wind_loop) { this.click("key_down"); this.startLoop(dir); return; }
+    if (this.running() && this.buffers.wind_loop) { this.startLoop(dir); return; }
     // Noch nicht bereit: Geraeusch nachholen, sobald Klaenge geladen und Ausgabe frei ist.
     this.ready.then(() => this.ctx && this.ctx.resume()).then(() => {
       if (this.wantDir === dir && !this.loop) this.startLoop(dir);
@@ -186,7 +186,6 @@ const fx = {
   end() {
     this.wantDir = 0;
     if (!this.ctx) return;
-    this.click("key_up");
     this.stopLoop(0.12);
   },
   stopLoop(after) {
@@ -320,7 +319,7 @@ function play() {
 }
 function pause() { state.playWhenReady = false; audio.pause(); }
 function togglePlay() { state.playing ? pause() : play(); }
-function stop() { audio.pause(); if (audio.src) audio.currentTime = 0; render(); }
+function stop() { state.playWhenReady = false; audio.pause(); render(); }
 function next() {
   const pl = state.playlist;
   if (pl && state.index + 1 < pl.tracks.length) select(state.index + 1, state.playing);
@@ -387,6 +386,7 @@ function bindKey(el, tap, dir) {
     if (!down) return;
     down = false;
     el.classList.remove("down");
+    fx.click("key_up");
     clearTimeout(holdTimer); clearInterval(stepTimer);
     if (held) endSeek(); else if (!cancel) tap();
   };
@@ -394,6 +394,7 @@ function bindKey(el, tap, dir) {
     e.preventDefault();
     down = true; held = false;
     el.classList.add("down");
+    fx.click("key_down");
     try { el.setPointerCapture(e.pointerId); } catch {}
     if (!dir) return;
     holdTimer = setTimeout(() => {
@@ -414,6 +415,8 @@ bindKey($("playKey"), togglePlay);
 bindKey($("stopKey"), stop);
 bindKey($("ejectKey"), openShelf);
 $("emptySlot").addEventListener("click", openShelf);
+$("shareBtn").addEventListener("pointerdown", () => fx.click("key_down"));
+$("shareBtn").addEventListener("pointerup", () => fx.click("key_up"));
 $("shareBtn").addEventListener("click", openShare);
 
 // ---------------------------------------------------------------- Darstellung
