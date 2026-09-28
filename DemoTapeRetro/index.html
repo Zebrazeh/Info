@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c1619">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DemoTape">
+<title>DemoTape</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+  <section class="unit" aria-label="Kassettenspieler">
+    <div class="front">
+      <div class="topbar">
+        <button class="hotline" id="shareBtn" aria-label="Tape teilen" data-i18n-aria="share"><span>SHARE</span></button>
+        <div class="jacks" aria-hidden="true">
+          <span class="op"><i id="led" class="led"></i>OPERATION</span>
+          <span class="hp">HEADPHONES</span>
+          <span class="jack"><b></b><small>A</small></span><span class="jack"><b></b><small>B</small></span>
+        </div>
+        <div class="brandline">
+          <span class="brand">DEMOTAPE</span>
+          <span class="model">STEREO CASSETTE PLAYER DT-1</span>
+        </div>
+        <div class="display" aria-live="off">
+          <div id="counter" class="counter"><b>0</b><b>0</b><span>:</span><b>0</b><b>0</b></div>
+          <span id="trackNo" class="track-no"></span>
+          <span id="spinner" class="spinner" hidden></span>
+        </div>
+      </div>
+      <div class="door">
+        <div class="stereo" aria-hidden="true">STEREO</div>
+        <div class="door-row">
+          <div class="window" id="slot">
+            <svg id="cassette" class="cassette" viewBox="0 0 200 314" hidden aria-hidden="true"><g transform="translate(0 314) rotate(-90)">
+          <defs>
+            <clipPath id="winClip"><rect x="83" y="100" width="148" height="52" rx="12"/></clipPath>
+          </defs>
+          <rect id="shell" x="1" y="1" width="312" height="198" rx="11" class="shell"/>
+          <g class="screws">
+            <circle cx="13" cy="13" r="4.5"/><circle cx="301" cy="13" r="4.5"/>
+            <circle cx="13" cy="187" r="4.5"/><circle cx="301" cy="187" r="4.5"/>
+          </g>
+          <rect x="22" y="14" width="270" height="134" rx="5" class="label"/>
+          <rect x="22" y="22" width="270" height="8" class="accent"/>
+          <line x1="40" y1="70" x2="274" y2="70" class="rule"/>
+          <line x1="40" y1="94" x2="274" y2="94" class="rule"/>
+          <rect x="22" y="138" width="270" height="6" class="accent" opacity=".85"/>
+          <text x="30" y="60" class="side">A</text>
+          <text id="bandName" x="166" y="63" class="ink band" text-anchor="middle" transform="rotate(-2 166 56)"></text>
+          <text id="trackName" x="157" y="89" class="ink track" text-anchor="middle" transform="rotate(-1 157 84)"></text>
+          <rect x="83" y="100" width="148" height="52" rx="12" class="reelwin"/>
+          <g clip-path="url(#winClip)">
+            <circle id="packL" cx="120" cy="126" r="34" class="pack"/>
+            <circle id="packR" cx="194" cy="126" r="14" class="pack"/>
+            <g id="hubL" transform="translate(120 126)"><use href="#hub"/></g>
+            <g id="hubR" transform="translate(194 126)"><use href="#hub"/></g>
+          </g>
+          <rect x="83" y="100" width="148" height="52" rx="12" class="reelwin-edge"/>
+          <path d="M 70 200 L 88 162 L 226 162 L 244 200 Z" class="trap"/>
+          <g class="holes"><circle cx="112" cy="182" r="5"/><circle cx="140" cy="182" r="7"/><circle cx="174" cy="182" r="7"/><circle cx="202" cy="182" r="5"/></g>
+          <symbol id="hub" viewBox="-11 -11 22 22" width="22" height="22" x="-11" y="-11" overflow="visible">
+            <circle r="11" fill="#f0f0f0"/><circle r="6" fill="#383838"/>
+            <g fill="#f0f0f0">
+              <rect x="-1" y="-6" width="2" height="3.4" rx="1"/><rect x="-1" y="-6" width="2" height="3.4" rx="1" transform="rotate(60)"/>
+              <rect x="-1" y="-6" width="2" height="3.4" rx="1" transform="rotate(120)"/><rect x="-1" y="-6" width="2" height="3.4" rx="1" transform="rotate(180)"/>
+              <rect x="-1" y="-6" width="2" height="3.4" rx="1" transform="rotate(240)"/><rect x="-1" y="-6" width="2" height="3.4" rx="1" transform="rotate(300)"/>
+            </g>
+          </symbol>
+        </g></svg>
+            <button id="emptySlot" class="empty-slot">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 4 15h16zM4 17h16v2H4z"/></svg>
+              <span class="hand" data-i18n="insert">Tape einlegen</span>
+            </button>
+            <div id="status" class="status" hidden></div>
+            <div class="glass"></div>
+          </div>
+          <svg class="arrow" viewBox="0 0 24 60" aria-hidden="true"><path d="M12 2 2 16h6v42h8V16h6z"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="keys">
+        <button class="key" id="ffKey" aria-label="Vor" data-i18n-aria="next"><svg viewBox="0 0 24 24"><path d="M3 6v12l9-6zM13 6v12l9-6z"/></svg><em>FF</em></button>
+        <button class="key" id="rewKey" aria-label="Zurück" data-i18n-aria="prev"><svg viewBox="0 0 24 24"><path d="M11 6v12L2 12zM21 6v12l-9-6z"/></svg><em>REW</em></button>
+        <button class="key play" id="playKey" aria-label="Abspielen" data-i18n-aria="play"><svg viewBox="0 0 24 24"><path id="playIcon" d="M7 5v14l12-7z"/></svg><em>PLAY</em></button>
+        <button class="key" id="stopKey" aria-label="Stopp / Auswerfen" data-i18n-aria="stopEject"><svg viewBox="0 0 24 24"><path d="M5 5h14v9H5zM5 16h14v3H5z"/></svg><em>STOP·EJECT</em></button>
+      </div>
+      <div class="volume" id="volume" aria-hidden="true">
+        <div class="ticks"></div>
+        <div class="vol-track"><div class="vol-knob" id="volKnob"></div></div>
+        <span>VOLUME</span>
+      </div>
+      <div class="side-foot" aria-hidden="true"><i></i></div>
+    </div>
+  </section>
+
+  <p class="legend" data-i18n="legend">◀◀ / ▶▶ kurz tippen = Titel wechseln · gedrückt halten = spulen</p>
+
+  <section id="jcard" class="jcard" hidden>
+    <div class="jcard-head"><span id="jBand" class="hand"></span><span id="jTape" class="hand small"></span></div>
+    <ol id="jTracks"></ol>
+  </section>
+</main>
+
+<dialog id="shelf" class="sheet">
+  <form method="dialog" class="sheet-inner" id="shelfForm">
+    <header><h2 data-i18n="insert">Tape einlegen</h2><button class="close" value="cancel" aria-label="Schließen" data-i18n-aria="close">✕</button></header>
+    <label for="listInput" data-i18n="address">Playlist-Adresse</label>
+    <input id="listInput" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…/demo.m3u">
+    <p id="inputError" class="error" hidden data-i18n="badAddress">Bitte eine https-Adresse einer M3U-Playlist angeben.</p>
+    <button class="primary" id="insertBtn" type="submit" value="insert" data-i18n="insertBtn">Einlegen</button>
+    <h3 id="recentHead" data-i18n="recent" hidden>Zuletzt eingelegt</h3>
+    <ul id="recent" class="recent"></ul>
+    <p class="fine"><a href="datenschutz" data-i18n="privacy">Datenschutzerklärung</a></p>
+  </form>
+</dialog>
+
+<dialog id="share" class="sheet">
+  <div class="sheet-inner center">
+    <header><h2 data-i18n="share">Tape teilen</h2><button class="close" id="shareClose" aria-label="Schließen" data-i18n-aria="close">✕</button></header>
+    <div id="shareBand" class="hand big"></div>
+    <div id="qr" class="qr"></div>
+    <p class="fine" data-i18n="scanHint">Mit der Handykamera scannen – das Tape wird direkt eingelegt.</p>
+    <p><code id="shareLink"></code></p>
+    <div class="row">
+      <button class="secondary" id="copyBtn" data-i18n="copy">Link kopieren</button>
+      <button class="primary" id="nativeShare" data-i18n="shareLink" hidden>Link teilen</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="vendor/qrcode.js"></script>
+<script src="k.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
