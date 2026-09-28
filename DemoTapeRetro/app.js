@@ -120,39 +120,62 @@ const store = {
 
 // ---------------------------------------------------------------- Spulgeraeusch (Web Audio)
 const fx = {
-  ctx: null, buffers: {}, loop: null, gain: null,
-  async init() {
-    unlockAudio();
-    if (this.ctx) { if (this.ctx.state === "suspended") this.ctx.resume(); return; }
+  ctx: null, buffers: {}, loop: null, gain: null, ready: null, wantDir: 0,
+  // Kontext + Klaenge sofort beim Seitenaufruf vorbereiten (Dekodieren geht auch im
+  // angehaltenen Zustand) – sonst sind die Klaenge beim ersten Spulen noch nicht da.
+  init() {
+    if (this.ctx) return this.ready;
     // iOS: Web Audio sonst stumm bei Stummschalter.
     try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
     const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
+    if (!AC) { this.ready = Promise.resolve(); return this.ready; }
     this.ctx = new AC();
     this.gain = this.ctx.createGain();
     this.gain.gain.value = 0.5;
     this.gain.connect(this.ctx.destination);
-    await Promise.all(["wind_loop", "key_down", "key_up"].map(async n => {
+    this.ready = Promise.all(["wind_loop", "key_down", "key_up"].map(async n => {
       try {
         const data = await (await fetch(`sounds/${n}.wav`)).arrayBuffer();
         this.buffers[n] = await new Promise((ok, err) => this.ctx.decodeAudioData(data, ok, err));
       } catch {}
     }));
+    return this.ready;
   },
+  // iOS schaltet Web Audio nur in "Loslassen/Tippen"-Ereignissen frei. Deshalb bei jeder
+  // solchen Geste fortsetzen und einen stummen Mini-Puffer abspielen.
+  unlock() {
+    this.init();
+    if (!this.ctx || this.ctx.state === "running") return;
+    try {
+      this.ctx.resume();
+      const s = this.ctx.createBufferSource();
+      s.buffer = this.ctx.createBuffer(1, 1, 22050);
+      s.connect(this.ctx.destination);
+      s.start(0);
+    } catch {}
+  },
+  running() { return this.ctx && this.ctx.state === "running"; },
   click(name) {
     const b = this.buffers[name];
-    if (!this.ctx || !b) return;
+    if (!this.running() || !b) return;
     const s = this.ctx.createBufferSource();
     const g = this.ctx.createGain();
     g.gain.value = 1.6;
     s.buffer = b; s.connect(g).connect(this.ctx.destination); s.start();
   },
   begin(dir) {
-    if (!this.ctx) return;
-    this.click("key_down");
+    this.init();
+    this.wantDir = dir;
+    if (this.running() && this.buffers.wind_loop) { this.click("key_down"); this.startLoop(dir); return; }
+    // Noch nicht bereit: Geraeusch nachholen, sobald Klaenge geladen und Ausgabe frei ist.
+    this.ready.then(() => this.ctx && this.ctx.resume()).then(() => {
+      if (this.wantDir === dir && !this.loop) this.startLoop(dir);
+    }).catch(() => {});
+  },
+  startLoop(dir) {
     this.stopLoop(0);
     const b = this.buffers.wind_loop;
-    if (!b) return;
+    if (!b || !this.running()) return;
     const s = this.ctx.createBufferSource();
     s.buffer = b; s.loop = true; s.connect(this.gain);
     const now = this.ctx.currentTime;
@@ -163,6 +186,7 @@ const fx = {
     this.loop = s;
   },
   end() {
+    this.wantDir = 0;
     if (!this.ctx) return;
     this.click("key_up");
     this.stopLoop(0.12);
@@ -178,6 +202,10 @@ const fx = {
     s.stop(now + after + 0.01);
   },
 };
+fx.init();
+for (const type of ["touchstart", "touchend", "pointerup", "click", "keydown"]) {
+  document.addEventListener(type, () => { fx.unlock(); unlockAudio(); }, { capture: true, passive: true });
+}
 
 // ---------------------------------------------------------------- Player
 const audio = new Audio();
@@ -186,14 +214,18 @@ const SEEK_STEP = 1.5;
 
 // iOS Safari erlaubt play() nur innerhalb einer Beruehrung. Verschluesselte Titel starten aber
 // erst nach dem Laden – deshalb wird das Element beim ersten Tippen einmal stumm "entsperrt".
-let audioUnlocked = false;
+let audioUnlocked = false, unlocking = false;
 function unlockAudio() {
-  if (audioUnlocked || state.srcReady) { audioUnlocked = true; return; }
-  audioUnlocked = true;
+  // Ist schon ein echter Titel geladen, entsperrt die Play-Taste das Element selbst.
+  if (audioUnlocked || unlocking || state.srcReady) return;
+  unlocking = true;
   const header = new Uint8Array([82,73,70,70,40,0,0,0,87,65,86,69,102,109,116,32,16,0,0,0,1,0,1,0,
     68,172,0,0,136,88,1,0,2,0,16,0,100,97,116,97,4,0,0,0,0,0,0,0]);
   audio.src = URL.createObjectURL(new Blob([header], { type: "audio/wav" }));
-  audio.play().then(() => { if (!state.srcReady) audio.pause(); }).catch(() => {});
+  // Erst bei Erfolg als entsperrt merken – ein Versuch ausserhalb einer gueltigen Geste
+  // (z. B. beim Beruehren statt Loslassen) wird beim naechsten Tippen wiederholt.
+  audio.play().then(() => { audioUnlocked = true; if (!state.srcReady) audio.pause(); })
+    .catch(() => {}).finally(() => { unlocking = false; });
 }
 
 const state = {
@@ -286,6 +318,8 @@ function prefetch(index) {
 function play() {
   if (!currentTrack()) return;
   if (state.buffering || !state.srcReady) { state.playWhenReady = true; if (!state.buffering) select(state.index, true); return; }
+  // Laeuft die Musik ueber den Lautstaerke-Gain, muss auch die Web-Audio-Ausgabe laufen.
+  if (mediaGain && fx.ctx.state !== "running") fx.ctx.resume();
   audio.play().catch(() => {});
 }
 function pause() { state.playWhenReady = false; audio.pause(); }
@@ -362,7 +396,6 @@ function bindKey(el, tap, dir) {
   };
   el.addEventListener("pointerdown", e => {
     e.preventDefault();
-    fx.init();
     down = true; held = false;
     el.classList.add("down");
     try { el.setPointerCapture(e.pointerId); } catch {}
@@ -388,20 +421,40 @@ bindKey($("stopKey"), () => {
   else stop();
 });
 
-// Lautstaerkeschieber: iOS erlaubt Webseiten keine Lautstaerke (audio.volume bleibt 1) –
-// dort ist der Schieber nur Zierde, die Seitentasten des Telefons regeln.
+// Lautstaerkeschieber. iOS ignoriert audio.volume – dort wird die Musik beim ersten Bewegen
+// des Schiebers ueber einen Web-Audio-Gain geleitet (bleibt dann dauerhaft so).
 const volumeSettable = (() => { const a = new Audio(); a.volume = 0.5; return Math.abs(a.volume - 0.5) < 0.01; })();
+let mediaGain = null;
+function routeThroughGain() {
+  if (mediaGain) return true;
+  fx.init();
+  if (!fx.ctx) return false;
+  try {
+    // Nicht-verschluesselte Titel von fremden Servern brauchen dafuer CORS (GitHub Pages: ja).
+    audio.crossOrigin = "anonymous";
+    const src = fx.ctx.createMediaElementSource(audio);
+    mediaGain = fx.ctx.createGain();
+    src.connect(mediaGain).connect(fx.ctx.destination);
+    return true;
+  } catch { return false; }
+}
 (() => {
   const box = $("volume"), track = box.querySelector(".vol-track"), knob = $("volKnob");
-  let vol = 0.7;
-  try { vol = parseFloat(localStorage.getItem("volume")) || 0.7; } catch {}
+  let vol = 1;
+  try { const v = parseFloat(localStorage.getItem("volume")); if (v >= 0 && v <= 1) vol = v; } catch {}
   const show = v => { knob.style.top = `calc(${(1 - v) * 100}% - ${(1 - v) * 5}cqh)`; };
-  if (!volumeSettable) { box.classList.add("fixed"); show(0.7); return; }
-  const apply = v => { vol = Math.min(1, Math.max(0, v)); audio.volume = vol; show(vol); try { localStorage.setItem("volume", vol); } catch {} };
-  apply(vol);
+  const apply = v => {
+    vol = Math.min(1, Math.max(0, v));
+    if (volumeSettable) audio.volume = vol;
+    else if (vol < 1 || mediaGain) { if (routeThroughGain()) mediaGain.gain.value = vol; }
+    show(vol);
+    try { localStorage.setItem("volume", vol); } catch {}
+  };
+  // Auf iOS erst bei Beruehrung umleiten (braucht eine Geste); bis dahin volle Lautstaerke.
+  if (volumeSettable) apply(vol); else show(1);
   const fromEvent = e => { const r = track.getBoundingClientRect(); apply(1 - (e.clientY - r.top) / r.height); };
-  box.addEventListener("pointerdown", e => { box.setPointerCapture(e.pointerId); fromEvent(e); });
-  box.addEventListener("pointermove", e => { if (e.buttons) fromEvent(e); });
+  box.addEventListener("pointerdown", e => { e.preventDefault(); try { box.setPointerCapture(e.pointerId); } catch {} fromEvent(e); });
+  box.addEventListener("pointermove", e => { if (e.buttons || e.pointerType === "touch") fromEvent(e); });
 })();
 $("emptySlot").addEventListener("click", openShelf);
 $("shareBtn").addEventListener("click", openShare);
@@ -465,7 +518,7 @@ function render() {
         const li = document.createElement("li");
         li.innerHTML = `<span class="n">${t.id + 1}.</span><span class="t"></span>`;
         li.querySelector(".t").textContent = t.title;
-        li.onclick = () => { fx.init(); select(t.id, true); };
+        li.onclick = () => select(t.id, true);
         ol.appendChild(li);
       });
     }
@@ -566,7 +619,7 @@ function openShelf() {
     b.innerHTML = `<span class="hand"></span><small></small>`;
     b.querySelector(".hand").textContent = e.band;
     b.querySelector("small").textContent = e.tape || "";
-    b.onclick = () => { $("shelf").close(); fx.init(); loadPlaylist(e.url); };
+    b.onclick = () => { $("shelf").close(); loadPlaylist(e.url); };
     const del = document.createElement("button");
     del.type = "button"; del.className = "del"; del.textContent = "✕";
     del.setAttribute("aria-label", T.remove);
@@ -584,7 +637,6 @@ $("shelfForm").addEventListener("submit", e => {
   const url = playlistURLFromInput($("listInput").value);
   if (!url) { $("inputError").hidden = false; return; }
   $("shelf").close();
-  fx.init();
   loadPlaylist(url);
 });
 
