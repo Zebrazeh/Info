@@ -1,13 +1,18 @@
 # DemoTape – Tapes
 
-Hier liegen Playlists (`.m3u`) und Demos (`.mp3`) für die App **DemoTape**.
+Hier liegen Playlists (`.m3u`) und Demos für die App **DemoTape**.
+
+**Demos bitte verschlüsselt als `.tape` ablegen** (z. B. `01-song.mp3.tape`) – die kann nur die
+App abspielen, ein direkter Download liefert nur Datenmüll. Verschlüsselt wird mit
+`Tools/encrypt_tape.swift` aus dem (privaten) App-Repo. Unverschlüsselte MP3s funktionieren
+auch, sind dann aber für jeden herunterladbar.
 
 Empfohlen: ein Unterordner pro Band, z. B.
 
 ```
 DemoTape/kellerkinder/demo.m3u
-DemoTape/kellerkinder/01-proberaum.mp3
-DemoTape/kellerkinder/02-nachtbus.mp3
+DemoTape/kellerkinder/01-proberaum.mp3.tape
+DemoTape/kellerkinder/02-nachtbus.mp3.tape
 ```
 
 ## Playlist-Vorlage (`demo.m3u`, UTF-8)
@@ -17,9 +22,9 @@ DemoTape/kellerkinder/02-nachtbus.mp3
 #PLAYLIST:Demo '26
 #EXTART:Die Kellerkinder
 #EXTINF:183,Die Kellerkinder - Proberaum
-01-proberaum.mp3
+01-proberaum.mp3.tape
 #EXTINF:201,Die Kellerkinder - Nachtbus
-02-nachtbus.mp3
+02-nachtbus.mp3.tape
 ```
 
 - `#EXTART` = Bandname auf dem Tape-Etikett, `#EXTINF:<Sekunden>,Band - Titel` = Titel.
