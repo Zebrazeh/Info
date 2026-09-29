@@ -126,6 +126,15 @@ const fx = {
   ctx: null, buffers: {}, loop: null, gain: null, ready: null, wantDir: 0,
   // Kontext + Klaenge sofort beim Seitenaufruf vorbereiten (Dekodieren geht auch im
   // angehaltenen Zustand) – sonst sind die Klaenge beim ersten Spulen noch nicht da.
+  raw: {},
+  // Beim Seitenaufruf nur die Klang-Dateien laden. Den Audio-Kontext erst in der ersten Geste
+  // anlegen: Ein schon existierender Kontext, der gleichzeitig mit der Musik anlaeuft, stellt
+  // auf dem iPhone die Audio-Sitzung um – die Musik laeuft dann stumm weiter.
+  preload() {
+    this.fetched = Promise.all(["wind_loop", "key_down", "key_up"].map(async n => {
+      try { this.raw[n] = await (await fetch(`sounds/${n}.wav`)).arrayBuffer(); } catch {}
+    }));
+  },
   init() {
     if (this.ctx) return this.ready;
     // iOS: Web Audio sonst stumm bei Stummschalter.
@@ -136,12 +145,12 @@ const fx = {
     this.gain = this.ctx.createGain();
     this.gain.gain.value = 0.5;
     this.gain.connect(this.ctx.destination);
-    this.ready = Promise.all(["wind_loop", "key_down", "key_up"].map(async n => {
-      try {
-        const data = await (await fetch(`sounds/${n}.wav`)).arrayBuffer();
-        this.buffers[n] = await new Promise((ok, err) => this.ctx.decodeAudioData(data, ok, err));
-      } catch {}
-    }));
+    // Laeuft der Kontext erst an, waehrend die Musik schon spielt, kurz neu starten – sonst
+    // bleibt sie auf dem iPhone stumm (Umstellung der Audio-Sitzung).
+    this.ctx.onstatechange = () => { if (this.ctx.state === "running") kickMusic(); };
+    this.ready = (this.fetched || Promise.resolve()).then(() => Promise.all(Object.entries(this.raw).map(async ([n, data]) => {
+      try { this.buffers[n] = await new Promise((ok, err) => this.ctx.decodeAudioData(data.slice(0), ok, err)); } catch {}
+    })));
     return this.ready;
   },
   // iOS schaltet Web Audio nur in "Loslassen/Tippen"-Ereignissen frei. Deshalb bei jeder
@@ -204,8 +213,9 @@ const fx = {
     s.stop(now + after + 0.01);
   },
 };
-fx.init();
-for (const type of ["touchstart", "touchend", "pointerup", "click", "keydown"]) {
+fx.preload();
+// Nur echte Freischalt-Gesten: Beruehren (touchstart) zaehlt auf dem iPhone nicht.
+for (const type of ["touchend", "pointerup", "click", "keydown"]) {
   document.addEventListener(type, () => { fx.unlock(); unlockAudio(); }, { capture: true, passive: true });
 }
 
@@ -300,9 +310,13 @@ function unlockAudio() {
 const state = {
   playlist: null, index: 0, playing: false, seekDir: 0, buffering: false,
   playWhenReady: false, resumeAfterSeek: false, token: 0, srcReady: false,
+  kicking: false, seekToEnd: false,
   imageTape: null,
   blobs: new Map(), // track-URL -> Object-URL (entschluesselt, nur im Speicher)
 };
+
+// Soll das Band laufen? Auch waehrend ein Titel noch laedt (playWhenReady).
+function wantPlay() { return state.playing || state.playWhenReady; }
 
 function currentTrack() {
   const pl = state.playlist;
@@ -312,6 +326,7 @@ function currentTrack() {
 async function loadPlaylist(url) {
   const token = ++state.token;
   stop();
+  state.playing = false;
   state.srcReady = false;
   audio.removeAttribute("src"); audio.load();
   for (const u of state.blobs.values()) URL.revokeObjectURL(u);
@@ -365,8 +380,11 @@ async function select(index, autoplay) {
   state.playWhenReady = autoplay;
   const track = pl.tracks[index];
   const token = ++state.token;
+  // Titelwechsel: Band steht, bis der neue Titel bereit ist (die Absicht traegt playWhenReady).
   audio.pause();
+  state.playing = false;
   state.srcReady = false;
+  if (!state.seekDir) state.seekToEnd = false;
   state.buffering = isTape(track.url) && !state.blobs.has(track.url);
   render();
   try {
@@ -375,7 +393,8 @@ async function select(index, autoplay) {
     state.buffering = false;
     audio.src = src;
     state.srcReady = true;
-    if (state.playWhenReady) play();
+    // Waehrend gespult wird nicht starten – das macht endSeek.
+    if (state.playWhenReady && !state.seekDir) play();
     prefetch(index + 1);
   } catch {
     if (token !== state.token) return;
@@ -397,19 +416,44 @@ function play() {
   audio.play().catch(() => {});
 }
 function pause() { state.playWhenReady = false; audio.pause(); }
-function togglePlay() { state.playing ? pause() : play(); }
+function togglePlay() { wantPlay() ? pause() : play(); }
 function stop() { state.playWhenReady = false; audio.pause(); render(); }
 function next() {
   const pl = state.playlist;
-  if (pl && state.index + 1 < pl.tracks.length) select(state.index + 1, state.playing);
+  if (pl && state.index + 1 < pl.tracks.length) select(state.index + 1, wantPlay());
 }
 function previous() {
-  if (audio.currentTime > 3 || state.index === 0) { if (audio.src) audio.currentTime = 0; render(); }
-  else select(state.index - 1, state.playing);
+  if (audio.currentTime > 3 || state.index === 0) { if (state.srcReady) audio.currentTime = 0; render(); }
+  else select(state.index - 1, wantPlay());
 }
 
-audio.addEventListener("play", () => { state.playing = true; render(); updateMediaSession(); });
-audio.addEventListener("pause", () => { if (!state.seekDir) state.playing = false; render(); updateMediaSession(); });
+// Ereignisse des stummen Freischalt-Tons und des Neustarts (kickMusic) aendern keinen Zustand.
+// Zustand folgt dem tatsaechlichen Abspielelement. Ausnahmen: stummer Freischalt-Ton
+// (noch kein Titel bereit), Spulen und der kurze Neustart in kickMusic.
+audio.addEventListener("play", () => { if (!state.srcReady) return; state.playing = true; render(); updateMediaSession(); });
+audio.addEventListener("pause", () => { if (!state.srcReady || state.kicking || state.seekDir) return; state.playing = false; render(); updateMediaSession(); });
+audio.addEventListener("loadedmetadata", () => {
+  // Beim Zurueckspulen ueber den Titelanfang: im vorigen Titel kurz vor dem Ende weiter.
+  if (state.seekToEnd && state.srcReady) { state.seekToEnd = false; audio.currentTime = Math.max(audio.duration - SEEK_STEP, 0); renderTime(); }
+});
+
+// iOS erkennt man daran, dass Webseiten die Lautstaerke nicht setzen duerfen.
+const IOS_AUDIO = (() => { const a = new Audio(); a.volume = 0.5; return Math.abs(a.volume - 0.5) > 0.01; })();
+
+function kickMusic() {
+  if (!IOS_AUDIO || audio.paused || !state.srcReady || state.kicking) return;
+  state.kicking = true;
+  setTimeout(() => {
+    const t = audio.currentTime;
+    audio.pause();
+    audio.currentTime = t;
+    audio.play().catch(() => {}).finally(() => {
+      state.kicking = false;
+      if (!state.seekDir) state.playing = !audio.paused;
+      render(); updateMediaSession();
+    });
+  }, 120);
+}
 audio.addEventListener("timeupdate", renderTime);
 audio.addEventListener("loadedmetadata", renderTime);
 audio.addEventListener("ended", () => {
@@ -421,7 +465,8 @@ audio.addEventListener("ended", () => {
 // Spulen
 function beginSeek(dir) {
   if (!currentTrack() || state.seekDir) return;
-  state.resumeAfterSeek = state.playing;
+  state.resumeAfterSeek = wantPlay();
+  state.playWhenReady = false;
   state.seekDir = dir;
   audio.pause();
   fx.begin(dir);
@@ -430,7 +475,8 @@ function beginSeek(dir) {
 }
 function seekStep() {
   const dir = state.seekDir;
-  if (!dir || !state.srcReady) return;
+  // Erst weiter, wenn der (neue) Titel bereit ist – sonst springt es mehrere Titel.
+  if (!dir || !state.srcReady || audio.readyState < 1 || state.seekToEnd) return;
   const dur = audio.duration || (currentTrack().duration || 0);
   let target = audio.currentTime + dir * SEEK_STEP;
   if (dur && target >= dur - 0.5) {
@@ -440,9 +486,8 @@ function seekStep() {
   }
   if (target < 0) {
     if (state.index > 0 && audio.currentTime < 0.1) {
-      select(state.index - 1, false).then(() => {
-        audio.addEventListener("loadedmetadata", () => { audio.currentTime = Math.max(audio.duration - SEEK_STEP, 0); }, { once: true });
-      });
+      state.seekToEnd = true;
+      select(state.index - 1, false);
       return;
     }
     target = 0;
@@ -454,7 +499,7 @@ function endSeek() {
   if (!state.seekDir) return;
   state.seekDir = 0;
   fx.end();
-  if (state.resumeAfterSeek) play(); else state.playing = false;
+  if (state.resumeAfterSeek) play(); else { state.playing = false; audio.pause(); }
   render();
 }
 
@@ -575,8 +620,8 @@ function render() {
   }
   $("led").classList.toggle("on", state.playing || !!state.seekDir);
   $("spinner").hidden = !state.buffering;
-  $("playIcon").setAttribute("d", state.playing ? "M6 5h4v14H6zM14 5h4v14h-4z" : "M7 5v14l12-7z");
-  $("playKey").setAttribute("aria-label", state.playing ? T.pause : T.play);
+  $("playIcon").setAttribute("d", wantPlay() ? "M6 5h4v14H6zM14 5h4v14h-4z" : "M7 5v14l12-7z");
+  $("playKey").setAttribute("aria-label", wantPlay() ? T.pause : T.play);
   $("rewKey").classList.toggle("down", state.seekDir < 0);
   $("ffKey").classList.toggle("down", state.seekDir > 0);
   renderTime();
