@@ -49,13 +49,13 @@
               <stop offset="0" stop-color="#f3ead2"/><stop offset=".6" stop-color="#ecdfbf"/><stop offset="1" stop-color="#e2d1a9"/>
             </linearGradient>
             <radialGradient id="screwGrad" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#b9b9b9"/><stop offset="1" stop-color="#555"/></radialGradient>
-            <radialGradient id="ringsL" gradientUnits="userSpaceOnUse" cx="93" cy="92" r="2.2" spreadMethod="repeat">
+            <radialGradient id="ringsL" gradientUnits="userSpaceOnUse" cx="93" cy="88" r="2.2" spreadMethod="repeat">
               <stop offset="0" stop-color="#5a3826"/><stop offset=".5" stop-color="#74492f"/><stop offset="1" stop-color="#4a2d1e"/>
             </radialGradient>
-            <radialGradient id="ringsR" gradientUnits="userSpaceOnUse" cx="221" cy="92" r="2.2" spreadMethod="repeat">
+            <radialGradient id="ringsR" gradientUnits="userSpaceOnUse" cx="221" cy="88" r="2.2" spreadMethod="repeat">
               <stop offset="0" stop-color="#5a3826"/><stop offset=".5" stop-color="#74492f"/><stop offset="1" stop-color="#4a2d1e"/>
             </radialGradient>
-            <clipPath id="paneClip"><rect x="120" y="74" width="74" height="36" rx="3"/></clipPath>
+            <clipPath id="paneClip"><rect x="120" y="70" width="74" height="36" rx="3"/></clipPath>
             <symbol id="screw" viewBox="-5 -5 10 10" width="10" height="10" x="-5" y="-5" overflow="visible">
               <circle r="4.6" fill="url(#screwGrad)" stroke="#222" stroke-width=".5"/>
               <path d="M-2.6 0h5.2M0 -2.6v5.2" stroke="#2a2a2a" stroke-width="1.1" stroke-linecap="round"/>
@@ -81,38 +81,38 @@
           <rect x=".5" y=".5" width="313" height="199" rx="10" fill="url(#shellShade)"/>
           <rect x="3" y="3" width="308" height="194" rx="8" fill="none" stroke="#000" stroke-opacity=".35"/>
           <!-- Etikett -->
-          <path d="M 26 12 H 290 Q 296 12 296 18 V 128 Q 296 134 290 134 H 24 Q 18 134 18 128 V 20 Z" fill="url(#labelAge)" class="label"/>
+          <path d="M 26 12 H 290 Q 296 12 296 18 V 133 Q 296 139 290 139 H 24 Q 18 139 18 133 V 20 Z" fill="url(#labelAge)" class="label"/>
           <line x1="30" y1="24" x2="284" y2="24" class="rule"/>
           <line x1="30" y1="56" x2="284" y2="56" class="rule"/>
           <g id="stripes">
-            <rect class="stripe" x="18" y="79" width="48" height="6"/><rect class="stripe" x="248" y="79" width="48" height="6"/>
-            <rect class="stripe" x="18" y="85" width="48" height="6"/><rect class="stripe" x="248" y="85" width="48" height="6"/>
-            <rect class="stripe" x="18" y="91" width="48" height="6"/><rect class="stripe" x="248" y="91" width="48" height="6"/>
-            <rect class="stripe" x="18" y="97" width="48" height="6"/><rect class="stripe" x="248" y="97" width="48" height="6"/>
-            <rect class="stripe" x="18" y="103" width="48" height="6"/><rect class="stripe" x="248" y="103" width="48" height="6"/>
+            <rect class="stripe" x="18" y="75" width="48" height="6"/><rect class="stripe" x="248" y="75" width="48" height="6"/>
+            <rect class="stripe" x="18" y="81" width="48" height="6"/><rect class="stripe" x="248" y="81" width="48" height="6"/>
+            <rect class="stripe" x="18" y="87" width="48" height="6"/><rect class="stripe" x="248" y="87" width="48" height="6"/>
+            <rect class="stripe" x="18" y="93" width="48" height="6"/><rect class="stripe" x="248" y="93" width="48" height="6"/>
+            <rect class="stripe" x="18" y="99" width="48" height="6"/><rect class="stripe" x="248" y="99" width="48" height="6"/>
           </g>
           <text x="26" y="48" class="side">A</text>
           <text id="bandName" x="162" y="48" class="ink band" text-anchor="middle" transform="rotate(-1.5 162 42)"></text>
-          <text id="trackName" x="157" y="128" class="ink track" text-anchor="middle" transform="rotate(-1 157 124)"></text>
+          <text id="trackName" x="157" y="131" class="ink track" text-anchor="middle" transform="rotate(-1 157 127)"></text>
           <!-- Sichtfenster -->
-          <rect x="66" y="66" width="182" height="52" rx="12" fill="#151515" stroke="#050505" stroke-width="1.2"/>
-          <rect x="67.5" y="67.5" width="179" height="49" rx="11" fill="none" stroke="#fff" stroke-opacity=".08"/>
-          <circle cx="93" cy="92" r="19" fill="#0b0b0b"/>
-          <circle cx="221" cy="92" r="19" fill="#0b0b0b"/>
-          <rect x="120" y="74" width="74" height="36" rx="3" fill="#0c0b0a"/>
+          <rect x="66" y="62" width="182" height="52" rx="12" fill="#151515" stroke="#050505" stroke-width="1.2"/>
+          <rect x="67.5" y="63.5" width="179" height="49" rx="11" fill="none" stroke="#fff" stroke-opacity=".08"/>
+          <circle cx="93" cy="88" r="19" fill="#0b0b0b"/>
+          <circle cx="221" cy="88" r="19" fill="#0b0b0b"/>
+          <rect x="120" y="70" width="74" height="36" rx="3" fill="#0c0b0a"/>
           <g clip-path="url(#paneClip)">
-            <circle id="packL" cx="93" cy="92" r="50" fill="url(#ringsL)" class="pack"/>
-            <circle id="packR" cx="221" cy="92" r="22" fill="url(#ringsR)" class="pack"/>
-            <rect x="120" y="74" width="74" height="36" fill="url(#shellShade)" opacity=".6"/>
+            <circle id="packL" cx="93" cy="88" r="50" fill="url(#ringsL)" class="pack"/>
+            <circle id="packR" cx="221" cy="88" r="22" fill="url(#ringsR)" class="pack"/>
+            <rect x="120" y="70" width="74" height="36" fill="url(#shellShade)" opacity=".6"/>
             <g stroke="#fff" stroke-opacity=".55" stroke-width=".8">
-              <line x1="130" y1="87" x2="130" y2="97"/><line x1="139" y1="87" x2="139" y2="97"/><line x1="148" y1="87" x2="148" y2="97"/>
-              <line x1="157" y1="85" x2="157" y2="99"/><line x1="166" y1="87" x2="166" y2="97"/><line x1="175" y1="87" x2="175" y2="97"/>
-              <line x1="184" y1="87" x2="184" y2="97"/>
+              <line x1="130" y1="83" x2="130" y2="93"/><line x1="139" y1="83" x2="139" y2="93"/><line x1="148" y1="83" x2="148" y2="93"/>
+              <line x1="157" y1="81" x2="157" y2="95"/><line x1="166" y1="83" x2="166" y2="93"/><line x1="175" y1="83" x2="175" y2="93"/>
+              <line x1="184" y1="83" x2="184" y2="93"/>
             </g>
           </g>
-          <rect x="120" y="74" width="74" height="36" rx="3" fill="none" stroke="#000" stroke-width="1"/>
-          <g id="hubL" transform="translate(93 92)"><use href="#hub"/></g>
-          <g id="hubR" transform="translate(221 92)"><use href="#hub"/></g>
+          <rect x="120" y="70" width="74" height="36" rx="3" fill="none" stroke="#000" stroke-width="1"/>
+          <g id="hubL" transform="translate(93 88)"><use href="#hub"/></g>
+          <g id="hubR" transform="translate(221 88)"><use href="#hub"/></g>
           <!-- Unterteil mit Fuehrungsloechern -->
           <path d="M 56 200 L 76 142 L 238 142 L 258 200 Z" class="trap"/>
           <path d="M 56 200 L 76 142 L 238 142 L 258 200 Z" fill="url(#shellShade)"/>

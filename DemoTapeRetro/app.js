@@ -817,8 +817,8 @@ function animate(t) {
   const rR = minR + (maxR - minR) * Math.sqrt(p);
   $("packL").setAttribute("r", rL.toFixed(2));
   $("packR").setAttribute("r", rR.toFixed(2));
-  $("hubL").setAttribute("transform", `translate(93 92) rotate(${(angle * rR / rL).toFixed(1)})`);
-  $("hubR").setAttribute("transform", `translate(221 92) rotate(${angle.toFixed(1)})`);
+  $("hubL").setAttribute("transform", `translate(93 88) rotate(${(angle * rR / rL).toFixed(1)})`);
+  $("hubR").setAttribute("transform", `translate(221 88) rotate(${angle.toFixed(1)})`);
   if (state.imageTape) {
     // Linke Nabe (Abwickelspule) dreht etwas schneller – wie beim echten Band.
     state.imageTape.spins.forEach((sp, i) => sp.el.setAttribute("transform",
