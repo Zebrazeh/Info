@@ -113,19 +113,23 @@ button { font: inherit; color: inherit; }
   color: transparent; -webkit-text-stroke: .45cqw #eef1f7; paint-order: stroke;
   margin: 0 0 2.2cqh 3cqw;
 }
-.door-row { flex: 1; display: flex; align-items: center; gap: 4cqw; min-height: 0; }
+.door-row { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7cqw; min-height: 0; padding-right: 4cqw; }
 .window {
-  position: relative; flex: 0 1 auto; height: 100%; aspect-ratio: .66; max-width: 80%;
+  /* Schmales Sichtfenster in der Klappe wie beim Vorbild; die Kassette dahinter ist groesser. */
+  position: relative; flex: 0 1 auto; height: 94%; aspect-ratio: .46; max-width: 62%;
   background: linear-gradient(#0b0d14, #1d2230);
-  border-radius: 2cqw; padding: 1.4cqh 2.4cqw;
-  box-shadow: inset 0 0 0 .5cqw #0e1a3d, inset 0 .8cqh 1.6cqh rgba(0,0,0,.8), 0 1px 0 rgba(255,255,255,.25);
+  border-radius: 1.6cqw; padding: 0; overflow: hidden;
+  box-shadow: 0 0 0 .7cqw #142a63, 0 0 0 1cqw rgba(255,255,255,.12), 0 1px 0 1cqw rgba(0,0,0,.35);
   display: flex; align-items: center; justify-content: center;
 }
-.glass { position: absolute; inset: .5cqw; border-radius: 1.6cqw; pointer-events: none; z-index: 2;
-  background: linear-gradient(115deg, rgba(120,150,255,.16), transparent 38%, transparent 70%, rgba(255,255,255,.06)); }
+/* Getoenter Kunststoff mit Spiegelung und Schatten am Rand (Kassette liegt hinter der Klappe) */
+.glass { position: absolute; inset: 0; border-radius: 1.6cqw; pointer-events: none; z-index: 2;
+  background: linear-gradient(115deg, rgba(120,150,255,.20), transparent 38%, transparent 70%, rgba(255,255,255,.07)),
+              linear-gradient(rgba(10,20,50,.18), rgba(10,20,50,.18));
+  box-shadow: inset 0 0 1.2cqw 0.6cqw rgba(0,0,0,.65), inset 0 0 0 .3cqw rgba(0,0,0,.6); }
 .arrow { flex: 0 0 6cqw; width: 6cqw; height: auto; fill: none; stroke: #eef1f7; stroke-width: 1.6; stroke-linejoin: round; }
 
-.cassette { height: 100%; width: auto; max-width: 100%; filter: drop-shadow(0 .5cqh 1cqh rgba(0,0,0,.6)); }
+.cassette { position: absolute; inset: 0; width: 100%; height: 100%; }
 .cassette .shell { fill: var(--shell); stroke: rgba(0, 0, 0, .35); }
 .cassette .screws circle { fill: #bbb; stroke: rgba(0, 0, 0, .4); stroke-width: .5; }
 .cassette .label { fill: var(--label); }
@@ -141,11 +145,11 @@ button { font: inherit; color: inherit; }
 .cassette .trap { fill: var(--shell); filter: brightness(.9); stroke: rgba(0, 0, 0, .3); }
 .cassette .holes circle { fill: rgba(0, 0, 0, .55); }
 
-.empty-slot { background: none; border: 0; cursor: pointer; color: rgba(255,255,255,.85);
-  display: flex; flex-direction: column; align-items: center; gap: 1cqh; font-size: 6cqw; text-align: center; }
+.empty-slot { background: none; border: 0; cursor: pointer; color: rgba(255,255,255,.85); position: absolute; inset: 0; z-index: 3;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1cqh; font-size: 5.2cqw; line-height: 1; text-align: center; padding: 2cqw; }
 .empty-slot svg { width: 8cqw; height: 8cqw; fill: currentColor; }
 .status { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 2cqh; z-index: 3;
-  align-items: center; justify-content: center; text-align: center; padding: 4cqw; color: rgba(255,255,255,.88); font-size: 3.4cqw; }
+  align-items: center; justify-content: center; text-align: center; padding: 2cqw; color: rgba(255,255,255,.88); font-size: 3cqw; }
 .status .hand { font-size: 6cqw; }
 .status .secondary { font-size: 3.2cqw; padding: 2.4cqw 3cqw; }
 

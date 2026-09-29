@@ -437,8 +437,11 @@ audio.addEventListener("loadedmetadata", () => {
   if (state.seekToEnd && state.srcReady) { state.seekToEnd = false; audio.currentTime = Math.max(audio.duration - SEEK_STEP, 0); renderTime(); }
 });
 
-// iOS erkennt man daran, dass Webseiten die Lautstaerke nicht setzen duerfen.
-const IOS_AUDIO = (() => { const a = new Audio(); a.volume = 0.5; return Math.abs(a.volume - 0.5) > 0.01; })();
+// iPhone/iPad: am Geraetetyp erkennen (iPadOS meldet sich als Mac mit Touch). Zusaetzlich,
+// falls ein Browser das Setzen der Lautstaerke sichtbar verweigert.
+const IOS_AUDIO = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  || (() => { const a = new Audio(); a.volume = 0.5; return Math.abs(a.volume - 0.5) > 0.01; })();
 
 function kickMusic() {
   if (!IOS_AUDIO || audio.paused || !state.srcReady || state.kicking) return;

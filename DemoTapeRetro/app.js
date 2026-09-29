@@ -263,8 +263,11 @@ function buildImageTape(img, layout) {
   if (old) old.remove();
   const W = img.naturalWidth, H = img.naturalHeight;
   const [x1, y1, x2, y2, r] = layout.reels || DEFAULT_LAYOUT.reels;
+  // Im Retro-Geraet zeigt das Fenster wie beim Original nur einen Ausschnitt: Spulen, Band und
+  // das Etikett daneben; die Raender der Kassette verdeckt die Klappe.
   const svg = svgEl("svg", { id: "imageTape", class: "cassette image-tape", "aria-hidden": "true",
-    viewBox: RETRO ? `0 0 ${H} ${W}` : `0 0 ${W} ${H}` });
+    viewBox: RETRO ? `${0.13 * H} ${0.1 * W} ${0.6 * H} ${0.8 * W}` : `0 0 ${W} ${H}`,
+    preserveAspectRatio: "xMidYMid slice" });
   // Im Retro-Geraet steht die Kassette hochkant (Band laeuft nach oben).
   const g = svgEl("g", RETRO ? { transform: `translate(0 ${W}) rotate(-90)` } : {}, svg);
   svgEl("image", { href: img.src, width: W, height: H }, g);
@@ -441,8 +444,11 @@ audio.addEventListener("loadedmetadata", () => {
   if (state.seekToEnd && state.srcReady) { state.seekToEnd = false; audio.currentTime = Math.max(audio.duration - SEEK_STEP, 0); renderTime(); }
 });
 
-// iOS erkennt man daran, dass Webseiten die Lautstaerke nicht setzen duerfen.
-const IOS_AUDIO = (() => { const a = new Audio(); a.volume = 0.5; return Math.abs(a.volume - 0.5) > 0.01; })();
+// iPhone/iPad: am Geraetetyp erkennen (iPadOS meldet sich als Mac mit Touch). Zusaetzlich,
+// falls ein Browser das Setzen der Lautstaerke sichtbar verweigert.
+const IOS_AUDIO = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  || (() => { const a = new Audio(); a.volume = 0.5; return Math.abs(a.volume - 0.5) > 0.01; })();
 
 function kickMusic() {
   if (!IOS_AUDIO || audio.paused || !state.srcReady || state.kicking) return;
@@ -549,7 +555,9 @@ bindKey($("stopKey"), () => {
 
 // Lautstaerkeschieber. iOS ignoriert audio.volume – dort wird die Musik beim ersten Bewegen
 // des Schiebers ueber einen Web-Audio-Gain geleitet (bleibt dann dauerhaft so).
-const volumeSettable = (() => { const a = new Audio(); a.volume = 0.5; return Math.abs(a.volume - 0.5) < 0.01; })();
+// Safari auf dem iPhone meldet den gesetzten Wert teils zurueck, ignoriert ihn aber – daher
+// dort immer ueber den Web-Audio-Gain regeln.
+const volumeSettable = !IOS_AUDIO;
 let mediaGain = null;
 function routeThroughGain() {
   if (mediaGain) return true;
