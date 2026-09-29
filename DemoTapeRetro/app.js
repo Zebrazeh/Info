@@ -66,7 +66,8 @@ function parseExtInf(value) {
 function parseM3U(text, base) {
   const lines = text.replace(/^﻿/, "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   if (lines[0] && /^<(!doctype|html)/i.test(lines[0])) throw new Error("notList");
-  let tape = null, band = null, info = null;
+  let tape = null, band = null, info = null, image = null;
+  const layout = {};
   const tracks = [];
   for (const line of lines) {
     if (line.startsWith("#")) {
@@ -74,6 +75,10 @@ function parseM3U(text, base) {
       const val = () => line.slice(line.indexOf(":") + 1).trim();
       if (up.startsWith("#PLAYLIST:") || up.startsWith("#EXTALB:")) tape = tape || val() || null;
       else if (up.startsWith("#EXTART:")) band = val() || band;
+      else if (up.startsWith("#EXTIMG:")) { try { image = new URL(val(), base).href; } catch {} }
+      else if (up.startsWith("#DEMOTAPE-REELS:")) { const n = val().split(",").map(Number); if (n.length === 5 && n.every(isFinite)) layout.reels = n; }
+      else if (up.startsWith("#DEMOTAPE-TITLE:")) { const v = val(); const n = v.split(",").map(Number);
+        if (v.toLowerCase() === "off") layout.title = "off"; else if (n.length === 3 && n.every(isFinite)) layout.title = n; }
       else if (up.startsWith("#EXTINF:")) info = parseExtInf(val());
       continue;
     }
@@ -86,7 +91,7 @@ function parseM3U(text, base) {
   }
   if (!tracks.length) throw new Error("empty");
   band = band || (tracks.find(t => t.artist) || {}).artist || fallbackTitle(base);
-  return { source: base, band, tape, tracks };
+  return { source: base, band, tape, tracks, image, layout };
 }
 
 // ---------------------------------------------------------------- .tape-Entschluesselung
@@ -206,6 +211,73 @@ for (const type of ["touchstart", "touchend", "pointerup", "click", "keydown"]) 
   document.addEventListener(type, () => { fx.unlock(); unlockAudio(); }, { capture: true, passive: true });
 }
 
+// ---------------------------------------------------------------- Eigene Tape-Vorlage (Bild)
+// Liegt neben der Playlist tape.jpg/.png/.webp (oder nennt die Playlist #EXTIMG:<bild>), wird
+// dieses Bild als Kassette gezeigt. Die Spulennaben werden rund aus dem Bild ausgeschnitten und
+// gedreht; der aktuelle Titel steht handschriftlich auf der freien Etikettflaeche.
+// Geometrie (Anteile von Breite/Hoehe) ist die eines ueblichen Kassettenfotos, per Playlist
+// ueberschreibbar:  #DEMOTAPE-REELS:x1,y1,x2,y2,radius   #DEMOTAPE-TITLE:x,y,breite | off
+const TAPE_IMAGE_NAMES = ["tape.jpg", "tape.png", "tape.webp"];
+const DEFAULT_LAYOUT = { reels: [0.297, 0.457, 0.700, 0.457, 0.052], title: [0.5, 0.632, 0.62] };
+const RETRO = !!document.querySelector(".unit");
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function loadImage(url, timeout = 4000) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const timer = setTimeout(() => resolve(null), timeout);
+    img.onload = () => { clearTimeout(timer); resolve(img.naturalWidth ? img : null); };
+    img.onerror = () => { clearTimeout(timer); resolve(null); };
+    img.src = url;
+  });
+}
+
+async function findTapeImage(pl) {
+  const candidates = pl.image ? [pl.image] : TAPE_IMAGE_NAMES.map(n => new URL(n, pl.source).href);
+  for (const url of candidates) {
+    const img = await loadImage(url);
+    if (img) return img;
+  }
+  return null;
+}
+
+function svgEl(name, attrs, parent) {
+  const el = document.createElementNS(SVGNS, name);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  if (parent) parent.appendChild(el);
+  return el;
+}
+
+function buildImageTape(img, layout) {
+  const old = document.getElementById("imageTape");
+  if (old) old.remove();
+  const W = img.naturalWidth, H = img.naturalHeight;
+  const [x1, y1, x2, y2, r] = layout.reels || DEFAULT_LAYOUT.reels;
+  const svg = svgEl("svg", { id: "imageTape", class: "cassette image-tape", "aria-hidden": "true",
+    viewBox: RETRO ? `0 0 ${H} ${W}` : `0 0 ${W} ${H}` });
+  // Im Retro-Geraet steht die Kassette hochkant (Band laeuft nach oben).
+  const g = svgEl("g", RETRO ? { transform: `translate(0 ${W}) rotate(-90)` } : {}, svg);
+  svgEl("image", { href: img.src, width: W, height: H }, g);
+  const defs = svgEl("defs", {}, g);
+  const spins = [[x1, y1], [x2, y2]].map(([fx, fy], i) => {
+    const cx = fx * W, cy = fy * H, rr = r * W;
+    const clip = svgEl("clipPath", { id: `tapeHub${i}` }, defs);
+    svgEl("circle", { cx, cy, r: rr }, clip);
+    const holder = svgEl("g", { "clip-path": `url(#tapeHub${i})` }, g);
+    const el = svgEl("image", { href: img.src, width: W, height: H }, holder);
+    return { el, cx, cy };
+  });
+  let title = null, titleWidth = 0;
+  const t = layout.title === "off" ? null : (layout.title || DEFAULT_LAYOUT.title);
+  if (t) {
+    titleWidth = t[2] * W;
+    title = svgEl("text", { x: t[0] * W, y: t[1] * H, "text-anchor": "middle", "dominant-baseline": "middle",
+      class: "ink image-title", "font-size": (0.068 * H).toFixed(1), transform: `rotate(-1.2 ${t[0] * W} ${t[1] * H})` }, g);
+  }
+  $("cassette").parentNode.insertBefore(svg, $("cassette"));
+  return { svg, spins, title, titleWidth };
+}
+
 // ---------------------------------------------------------------- Player
 const audio = new Audio();
 audio.preload = "auto";
@@ -230,6 +302,7 @@ function unlockAudio() {
 const state = {
   playlist: null, index: 0, playing: false, seekDir: 0, buffering: false,
   playWhenReady: false, resumeAfterSeek: false, token: 0, srcReady: false,
+  imageTape: null,
   blobs: new Map(), // track-URL -> Object-URL (entschluesselt, nur im Speicher)
 };
 
@@ -252,6 +325,12 @@ async function loadPlaylist(url) {
     if (!res.ok) throw new Error("load");
     const pl = parseM3U(await res.text(), res.url || url);
     if (token !== state.token) return;
+    // Eigene Tape-Vorlage? Vor dem Anzeigen suchen, damit nicht erst die Standardkassette aufblitzt.
+    const tapeImg = await findTapeImage(pl);
+    if (token !== state.token) return;
+    const old = document.getElementById("imageTape");
+    if (old) old.remove();
+    state.imageTape = tapeImg ? buildImageTape(tapeImg, pl.layout) : null;
     state.playlist = pl;
     store.remember(pl);
     history.replaceState(null, "", location.pathname + "?list=" + encodeURIComponent(url));
@@ -488,6 +567,7 @@ function showStatus(kind, msg) {
   if (!kind) { el.hidden = true; el.innerHTML = ""; return; }
   el.hidden = false;
   $("cassette").toggleAttribute("hidden", true);
+  if (state.imageTape) state.imageTape.svg.toggleAttribute("hidden", true);
   $("emptySlot").hidden = true;
   if (kind === "loading") el.innerHTML = `<span class="spinner"></span><span class="hand">${T.loading}</span>`;
   else {
@@ -502,7 +582,12 @@ function showStatus(kind, msg) {
 function render() {
   const pl = state.playlist, track = currentTrack();
   const hasTape = !!pl && $("status").hidden;
-  $("cassette").toggleAttribute("hidden", !hasTape);
+  const custom = hasTape && state.imageTape;
+  $("cassette").toggleAttribute("hidden", !hasTape || !!custom);
+  if (state.imageTape) {
+    state.imageTape.svg.toggleAttribute("hidden", !custom);
+    if (state.imageTape.title) fitText(state.imageTape.title, track ? track.title : "", state.imageTape.titleWidth);
+  }
   $("emptySlot").hidden = !!pl || !$("status").hidden;
   $("shareBtn").disabled = !pl;
   $("jcard").hidden = !pl;
@@ -572,6 +657,11 @@ function animate(t) {
   $("packR").setAttribute("r", rR.toFixed(2));
   $("hubL").setAttribute("transform", `translate(120 126) rotate(${(angle * rR / rL).toFixed(1)})`);
   $("hubR").setAttribute("transform", `translate(194 126) rotate(${angle.toFixed(1)})`);
+  if (state.imageTape) {
+    // Linke Nabe (Abwickelspule) dreht etwas schneller – wie beim echten Band.
+    state.imageTape.spins.forEach((sp, i) => sp.el.setAttribute("transform",
+      `rotate(${(i === 0 ? angle * 1.25 : angle).toFixed(1)} ${sp.cx.toFixed(1)} ${sp.cy.toFixed(1)})`));
+  }
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);

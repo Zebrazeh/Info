@@ -37,3 +37,14 @@ https://zebrazeh.github.io/Info/DemoTape/<band>/demo.m3u
 ```
 
 Groß-/Kleinschreibung im Pfad beachten. In der App über ⏏ einfügen; das QR-Symbol am Gerät erzeugt daraus den Link zum Teilen.
+
+## Eigenes Tape-Bild (Web-Version)
+
+Liegt im Band-Ordner ein Bild `tape.jpg` (oder `tape.png` / `tape.webp`), zeigt die Webseite
+dieses Bild als eingelegte Kassette – die Spulen im Bild drehen sich, der aktuelle Titel wird
+handschriftlich unter das Fenster geschrieben. Am besten ein gerades Foto/Bild einer Kassette
+von vorn im Querformat (z. B. 1536×1024). Beispiel: `kickass/`.
+
+Passen die Spulen nicht genau, lassen sie sich in der Playlist verschieben (Anteile von
+Breite/Höhe): `#DEMOTAPE-REELS:0.297,0.457,0.700,0.457,0.052` – linke Spule x,y, rechte Spule x,y,
+Radius. Titelposition: `#DEMOTAPE-TITLE:0.5,0.632,0.62` (x, y, Breite) oder `#DEMOTAPE-TITLE:off`.
