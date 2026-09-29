@@ -16,6 +16,7 @@ const T = {
     errNotList: "Unter dieser Adresse liegt keine M3U-Playlist.",
     errLoad: "Die Playlist konnte nicht geladen werden.",
     errTrack: "Der Titel konnte nicht geladen werden.",
+    loadingShort: "LADE",
   },
   en: {
     insert: "Insert tape", insertBtn: "Insert", address: "Playlist address", recent: "Recently played",
@@ -29,6 +30,7 @@ const T = {
     errNotList: "There is no M3U playlist at this address.",
     errLoad: "The playlist could not be loaded.",
     errTrack: "The track could not be loaded.",
+    loadingShort: "LOADING",
   },
 }[LANG];
 document.documentElement.lang = LANG;
@@ -331,6 +333,7 @@ async function loadPlaylist(url) {
   audio.removeAttribute("src"); audio.load();
   for (const u of state.blobs.values()) URL.revokeObjectURL(u);
   state.blobs.clear();
+  pruneDownloads(new Set());
   state.playlist = null;
   showStatus("loading");
   try {
@@ -357,12 +360,67 @@ async function loadPlaylist(url) {
   render();
 }
 
-async function sourceFor(track) {
+// Downloads verschluesselter Titel: je Titel hoechstens einer gleichzeitig (Vorabladen und
+// Titelwahl teilen ihn), ueberholte werden abgebrochen, Fortschritt fuer die Anzeige, und
+// fertige Tapes bleiben (verschluesselt) im Browser-Zwischenspeicher fuer den naechsten Besuch.
+const TAPE_CACHE = "demotape-tapes-v1";
+const TAPE_CACHE_MAX = 16;
+const downloads = new Map(); // url -> { promise, controller, listeners:Set, progress }
+
+async function cachedTape(url) {
+  try { const c = await caches.open(TAPE_CACHE); const r = await c.match(url); return r ? await r.arrayBuffer() : null; }
+  catch { return null; }
+}
+async function storeTape(url, buffer) {
+  try {
+    const c = await caches.open(TAPE_CACHE);
+    await c.put(url, new Response(buffer, { headers: { "Content-Type": "application/octet-stream" } }));
+    const keys = await c.keys();
+    for (const k of keys.slice(0, Math.max(0, keys.length - TAPE_CACHE_MAX))) await c.delete(k);
+  } catch {}
+}
+
+function downloadTape(url, onProgress) {
+  let d = downloads.get(url);
+  if (!d) {
+    const controller = new AbortController();
+    d = { controller, listeners: new Set(), progress: 0 };
+    const report = p => { d.progress = p; d.listeners.forEach(fn => fn(p)); };
+    d.promise = (async () => {
+      const hit = await cachedTape(url);
+      if (hit) { report(1); return hit; }
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) throw new Error("track");
+      const total = +res.headers.get("Content-Length") || 0;
+      if (!res.body || !total) { const b = await res.arrayBuffer(); report(1); return b; }
+      const reader = res.body.getReader();
+      const buf = new Uint8Array(total);
+      let got = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (got + value.length > buf.length) throw new Error("size");
+        buf.set(value, got); got += value.length;
+        report(got / total);
+      }
+      storeTape(url, buf.buffer);
+      return buf.buffer;
+    })().finally(() => downloads.delete(url));
+    downloads.set(url, d);
+  }
+  if (onProgress) { d.listeners.add(onProgress); onProgress(d.progress); }
+  return d.promise;
+}
+
+// Alle Downloads ausser den noch gebrauchten (aktueller + naechster Titel) abbrechen.
+function pruneDownloads(keepUrls) {
+  for (const [url, d] of downloads) if (!keepUrls.has(url)) { d.controller.abort(); downloads.delete(url); }
+}
+
+async function sourceFor(track, onProgress) {
   if (!isTape(track.url)) return track.url;
   if (state.blobs.has(track.url)) return state.blobs.get(track.url);
-  const res = await fetch(track.url);
-  if (!res.ok) throw new Error("track");
-  const plain = await decryptTape(await res.arrayBuffer());
+  const plain = await decryptTape(await downloadTape(track.url, onProgress));
   const inner = track.url.split("?")[0].replace(/\.tape$/i, "");
   const ext = (inner.split(".").pop() || "mp3").toLowerCase();
   const blobUrl = URL.createObjectURL(new Blob([plain], { type: MIME[ext] || "audio/mpeg" }));
@@ -371,6 +429,12 @@ async function sourceFor(track) {
   for (const [u, b] of state.blobs) if (!keep.has(u)) { URL.revokeObjectURL(b); state.blobs.delete(u); }
   state.blobs.set(track.url, blobUrl);
   return blobUrl;
+}
+
+function renderLoad(p) {
+  const el = $("loadInfo");
+  if (!el) return;
+  el.textContent = state.buffering ? `${T.loadingShort} ${Math.floor((p || 0) * 100)} %` : "";
 }
 
 async function select(index, autoplay) {
@@ -386,9 +450,12 @@ async function select(index, autoplay) {
   state.srcReady = false;
   if (!state.seekDir) state.seekToEnd = false;
   state.buffering = isTape(track.url) && !state.blobs.has(track.url);
+  // Ueberholte Downloads abbrechen – sonst teilen sich mehrere grosse Dateien die Leitung.
+  pruneDownloads(new Set(pl.tracks.slice(index, index + 2).map(t => t.url)));
   render();
+  renderLoad(0);
   try {
-    const src = await sourceFor(track);
+    const src = await sourceFor(track, p => { if (token === state.token) renderLoad(p); });
     if (token !== state.token) return;
     state.buffering = false;
     audio.src = src;
@@ -396,11 +463,12 @@ async function select(index, autoplay) {
     // Waehrend gespult wird nicht starten – das macht endSeek.
     if (state.playWhenReady && !state.seekDir) play();
     prefetch(index + 1);
-  } catch {
-    if (token !== state.token) return;
+  } catch (e) {
+    if (token !== state.token || (e && e.name === "AbortError")) return;
     state.buffering = false;
     showStatus("error", T.errTrack);
   }
+  renderLoad(1);
   updateMediaSession();
   render();
 }
@@ -412,10 +480,14 @@ function prefetch(index) {
 
 function play() {
   if (!currentTrack()) return;
-  if (state.buffering || !state.srcReady) { state.playWhenReady = true; if (!state.buffering) select(state.index, true); return; }
+  if (state.buffering || !state.srcReady) {
+    state.playWhenReady = true;
+    if (!state.buffering) select(state.index, true); else render();
+    return;
+  }
   audio.play().catch(() => {});
 }
-function pause() { state.playWhenReady = false; audio.pause(); }
+function pause() { state.playWhenReady = false; audio.pause(); render(); }
 function togglePlay() { wantPlay() ? pause() : play(); }
 function stop() { state.playWhenReady = false; audio.pause(); render(); }
 function next() {
@@ -623,6 +695,9 @@ function render() {
   }
   $("led").classList.toggle("on", state.playing || !!state.seekDir);
   $("spinner").hidden = !state.buffering;
+  // Leuchte blinkt: Wiedergabe gewuenscht, Titel laedt noch.
+  $("led").classList.toggle("wait", state.buffering && state.playWhenReady);
+  if (!state.buffering) renderLoad(1);
   $("playIcon").setAttribute("d", wantPlay() ? "M6 5h4v14H6zM14 5h4v14h-4z" : "M7 5v14l12-7z");
   $("playKey").setAttribute("aria-label", wantPlay() ? T.pause : T.play);
   $("rewKey").classList.toggle("down", state.seekDir < 0);
