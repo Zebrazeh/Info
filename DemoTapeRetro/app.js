@@ -79,6 +79,8 @@ function parseM3U(text, base) {
       else if (up.startsWith("#EXTART:")) band = val() || band;
       else if (up.startsWith("#EXTIMG:")) { try { image = new URL(val(), base).href; } catch {} }
       else if (up.startsWith("#DEMOTAPE-REELS:")) { const n = val().split(",").map(Number); if (n.length === 5 && n.every(isFinite)) layout.reels = n; }
+      else if (up.startsWith("#DEMOTAPE-PANE:")) { const v = val(); const n = v.split(",").map(Number);
+        if (v.toLowerCase() === "off") layout.pane = "off"; else if (n.length === 4 && n.every(isFinite)) layout.pane = n; }
       else if (up.startsWith("#DEMOTAPE-TITLE:")) { const v = val(); const n = v.split(",").map(Number);
         if (v.toLowerCase() === "off") layout.title = "off"; else if (n.length === 3 && n.every(isFinite)) layout.title = n; }
       else if (up.startsWith("#EXTINF:")) info = parseExtInf(val());
@@ -230,7 +232,9 @@ for (const type of ["touchend", "pointerup", "click", "keydown"]) {
 // Geometrie (Anteile von Breite/Hoehe) ist die eines ueblichen Kassettenfotos, per Playlist
 // ueberschreibbar:  #DEMOTAPE-REELS:x1,y1,x2,y2,radius   #DEMOTAPE-TITLE:x,y,breite | off
 const TAPE_IMAGE_NAMES = ["tape.jpg", "tape.png", "tape.webp"];
-const DEFAULT_LAYOUT = { reels: [0.297, 0.457, 0.700, 0.457, 0.052], title: [0.5, 0.632, 0.62] };
+// pane: Klarsichtfeld zwischen den Spulen (x, y, Breite, Hoehe) – dort werden die Bandwickel
+// gezeichnet, die beim Abspielen/Spulen wachsen bzw. schrumpfen.
+const DEFAULT_LAYOUT = { reels: [0.297, 0.457, 0.700, 0.457, 0.052], title: [0.5, 0.632, 0.62], pane: [0.392, 0.368, 0.218, 0.183] };
 const RETRO = !!document.querySelector(".unit");
 const SVGNS = "http://www.w3.org/2000/svg";
 
@@ -274,6 +278,32 @@ function buildImageTape(img, layout) {
   const g = svgEl("g", RETRO ? { transform: `translate(0 ${W}) rotate(-90)` } : {}, svg);
   svgEl("image", { href: img.src, width: W, height: H }, g);
   const defs = svgEl("defs", {}, g);
+  // Bandwickel im Klarsichtfeld: das (statische) Band im Foto abdecken und eigene Wickel zeichnen.
+  let packs = null;
+  const pane = layout.pane === "off" ? null : (layout.pane || DEFAULT_LAYOUT.pane);
+  if (pane) {
+    const [px, py, pw, ph] = pane.map((v, i) => v * (i % 2 === 0 ? W : H));
+    const clip = svgEl("clipPath", { id: "tapePane" }, defs);
+    svgEl("rect", { x: px, y: py, width: pw, height: ph, rx: ph * .06 }, clip);
+    const paneG = svgEl("g", { "clip-path": "url(#tapePane)" }, g);
+    svgEl("rect", { x: px, y: py, width: pw, height: ph, fill: "#0d0b0a" }, paneG);
+    const ringW = Math.max(W * 0.004, 2);
+    packs = [[x1, y1], [x2, y2]].map(([fx, fy], i) => {
+      const grad = svgEl("radialGradient", { id: `tapeRings${i}`, gradientUnits: "userSpaceOnUse",
+        cx: fx * W, cy: fy * H, r: ringW, spreadMethod: "repeat" }, defs);
+      [["0", "#5a3826"], [".5", "#74492f"], ["1", "#4a2d1e"]].forEach(([o, c]) => svgEl("stop", { offset: o, "stop-color": c }, grad));
+      return svgEl("circle", { cx: fx * W, cy: fy * H, r: 0, fill: `url(#tapeRings${i})` }, paneG);
+    });
+    // Glas und Skalenstriche
+    svgEl("rect", { x: px, y: py, width: pw, height: ph, fill: "#fff", "fill-opacity": .06 }, paneG);
+    for (let k = 1; k < 8; k++) {
+      const x = px + pw * k / 8, long = k === 4;
+      svgEl("line", { x1: x, x2: x, y1: py + ph * (long ? .32 : .4), y2: py + ph * (long ? .68 : .6),
+        stroke: "#fff", "stroke-opacity": .55, "stroke-width": W * .0015 }, paneG);
+    }
+    const hubR = r * W, dist = (x2 - x1) * W;
+    packs.minR = hubR * 1.25; packs.maxR = dist * .5;
+  }
   const spins = [[x1, y1], [x2, y2]].map(([fx, fy], i) => {
     const cx = fx * W, cy = fy * H, rr = r * W;
     const clip = svgEl("clipPath", { id: `tapeHub${i}` }, defs);
@@ -290,7 +320,7 @@ function buildImageTape(img, layout) {
       class: "ink image-title", "font-size": (0.068 * H).toFixed(1), transform: `rotate(-1.2 ${t[0] * W} ${t[1] * H})` }, g);
   }
   $("cassette").parentNode.insertBefore(svg, $("cassette"));
-  return { svg, spins, title, titleWidth };
+  return { svg, spins, title, titleWidth, packs };
 }
 
 // ---------------------------------------------------------------- Player
@@ -819,6 +849,11 @@ function animate(t) {
   $("packR").setAttribute("r", rR.toFixed(2));
   $("hubL").setAttribute("transform", `translate(93 88) rotate(${(angle * rR / rL).toFixed(1)})`);
   $("hubR").setAttribute("transform", `translate(221 88) rotate(${angle.toFixed(1)})`);
+  if (state.imageTape && state.imageTape.packs) {
+    const pk = state.imageTape.packs;
+    pk[0].setAttribute("r", (pk.minR + (pk.maxR - pk.minR) * Math.sqrt(1 - p)).toFixed(1));
+    pk[1].setAttribute("r", (pk.minR + (pk.maxR - pk.minR) * Math.sqrt(p)).toFixed(1));
+  }
   if (state.imageTape) {
     // Linke Nabe (Abwickelspule) dreht etwas schneller – wie beim echten Band.
     state.imageTape.spins.forEach((sp, i) => sp.el.setAttribute("transform",

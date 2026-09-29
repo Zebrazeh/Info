@@ -299,3 +299,7 @@ code { word-break: break-all; font-size: 12px; color: var(--muted); }
 
 .hotline.disabled { opacity: .55; }
 [role="button"]:focus-visible { outline: .4em solid rgba(255,190,90,.9); outline-offset: .4em; }
+
+/* Teilen-Fenster mittig statt als Blatt von unten */
+#share.sheet { margin: auto; border-radius: 18px; max-height: 88vh; width: min(420px, calc(100vw - 32px)); }
+#share .sheet-inner { padding-bottom: 22px; }
