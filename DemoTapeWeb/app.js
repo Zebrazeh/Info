@@ -640,11 +640,21 @@ $("shareBtn").addEventListener("pointerup", () => fx.click("key_up"));
 $("shareBtn").addEventListener("click", openShare);
 
 // ---------------------------------------------------------------- Darstellung
-const SHELLS = ["#edebe0", "#c7291f", "#f2bd29", "#295c9e", "#333338", "#5c9466"];
-function shellColor(band) {
+// Gehaeusefarben echter Leerkassetten und typische Etikett-Streifen; jede Band behaelt ihre.
+const SHELLS = ["#1c1c1e", "#2f2f34", "#e7e3d9", "#45454b", "#4a1714", "#1b2a45"];
+const STRIPES = [
+  ["#d8432f", "#ec8b2e", "#e9bf3a", "#5f9f4e", "#2f7fb5"],
+  ["#7d1a15", "#b8321d", "#e0602a", "#ee9d38", "#f3cf6a"],
+  ["#15294a", "#27527f", "#4886b8", "#86bddb", "#c8e3ef"],
+  ["#2d2d2d", "#c23a2b", "#2d2d2d", "#c23a2b", "#2d2d2d"],
+];
+function bandHash(band) {
   let sum = 5381;
   for (const ch of band) sum = (Math.imul(sum, 33) + ch.codePointAt(0)) >>> 0;
-  return SHELLS[sum % SHELLS.length];
+  return sum;
+}
+function shellColor(band) {
+  return SHELLS[bandHash(band) % SHELLS.length];
 }
 
 function fitText(el, text, maxWidth) {
@@ -691,8 +701,10 @@ function render() {
   if (pl) {
     $("shell").style.fill = shellColor(pl.band);
     document.querySelector(".cassette .trap").style.fill = shellColor(pl.band);
-    fitText($("bandName"), pl.band, 222);
-    fitText($("trackName"), track ? track.title : "", 244);
+    const stripes = STRIPES[Math.floor(bandHash(pl.band) / SHELLS.length) % STRIPES.length];
+    document.querySelectorAll("#stripes .stripe").forEach((r, i) => r.setAttribute("fill", stripes[Math.floor(i / 2)]));
+    fitText($("bandName"), pl.band, 236);
+    fitText($("trackName"), track ? track.title : "", 170);
     $("trackNo").textContent = `${state.index + 1}/${pl.tracks.length}`;
     $("jBand").textContent = pl.band;
     $("jTape").textContent = pl.tape || "";
@@ -750,13 +762,14 @@ function animate(t) {
     const inTrack = dur ? Math.min((audio.currentTime || 0) / dur, 1) : 0;
     p = (state.index + inTrack) / pl.tracks.length;
   }
-  const minR = 14, maxR = 37;
+  // Bandwickel: vom Kern (knapp ueber der Nabe) bis zur vollen Spule; sichtbar im Klarsichtfeld.
+  const minR = 20, maxR = 54;
   const rL = minR + (maxR - minR) * Math.sqrt(1 - p);
   const rR = minR + (maxR - minR) * Math.sqrt(p);
   $("packL").setAttribute("r", rL.toFixed(2));
   $("packR").setAttribute("r", rR.toFixed(2));
-  $("hubL").setAttribute("transform", `translate(120 126) rotate(${(angle * rR / rL).toFixed(1)})`);
-  $("hubR").setAttribute("transform", `translate(194 126) rotate(${angle.toFixed(1)})`);
+  $("hubL").setAttribute("transform", `translate(93 92) rotate(${(angle * rR / rL).toFixed(1)})`);
+  $("hubR").setAttribute("transform", `translate(221 92) rotate(${angle.toFixed(1)})`);
   if (state.imageTape) {
     // Linke Nabe (Abwickelspule) dreht etwas schneller – wie beim echten Band.
     state.imageTape.spins.forEach((sp, i) => sp.el.setAttribute("transform",
