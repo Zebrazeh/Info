@@ -20,8 +20,11 @@
     <div class="device unit">
       <!-- Oberseite: orange Taste (Teilen), Buchsen, Betriebsleuchte -->
       <div class="face top">
-        <button class="hotline" id="shareBtn" aria-label="Tape teilen" data-i18n-aria="share"><span>SHARE</span></button>
-        <span class="engrave hot-label">SHARE</span>
+        <div role="button" tabindex="0" class="hotline" id="shareBtn" aria-label="Tape teilen" data-i18n-aria="share">
+          <span class="cap"></span>
+          <span class="cap-front"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM5 5v3h3V5zM16 5v3h3V5zM5 16v3h3v-3zM14 14h3v3h-3zM18 18h3v3h-3zM14 18h2v3h-2zM18 14h3v2h-3z"/></svg><b data-i18n="shareShort">TEILEN</b></span>
+          <span class="cap-side"></span>
+        </div>
         <span class="op"><i id="led" class="led"></i>OPERATION</span>
         <span class="jack j1"><b></b></span><span class="jack j2"><b></b></span>
         <span class="engrave jack-label">HEADPHONES A · B</span>
@@ -141,10 +144,10 @@
       <!-- Rechte Seite: Metallschieber-Tasten, Lautstaerke, Buchse -->
       <div class="face right">
         <div class="keys">
-          <div class="keyrow"><button class="key" id="stopKey" aria-label="Stopp / Auswerfen" data-i18n-aria="stopEject"><i class="glyph"><svg viewBox="0 0 24 24"><path d="M5 5h14v9H5zM5 16h14v3H5z"/></svg></i></button><span class="engrave">STOP<br>EJECT</span></div>
-          <div class="keyrow"><button class="key play" id="playKey" aria-label="Abspielen" data-i18n-aria="play"><i class="glyph"><svg viewBox="0 0 24 24"><path id="playIcon" d="M7 5v14l12-7z"/></svg></i></button><span class="engrave">PLAY</span></div>
-          <div class="keyrow"><button class="key" id="rewKey" aria-label="Zurück" data-i18n-aria="prev"><i class="glyph"><svg viewBox="0 0 24 24"><path d="M11 6v12L2 12zM21 6v12l-9-6z"/></svg></i></button><span class="engrave">REW</span></div>
-          <div class="keyrow"><button class="key" id="ffKey" aria-label="Vor" data-i18n-aria="next"><i class="glyph"><svg viewBox="0 0 24 24"><path d="M3 6v12l9-6zM13 6v12l9-6z"/></svg></i></button><span class="engrave">FF</span></div>
+          <div class="keyrow"><div role="button" tabindex="0" class="key" id="stopKey" aria-label="Stopp / Auswerfen" data-i18n-aria="stopEject"><i class="k-cap"></i><i class="k-top"></i><i class="k-front"></i><i class="glyph"><svg viewBox="0 0 24 24"><path d="M5 5h14v9H5zM5 16h14v3H5z"/></svg></i></div><span class="engrave">STOP<br>EJECT</span></div>
+          <div class="keyrow"><div role="button" tabindex="0" class="key play" id="playKey" aria-label="Abspielen" data-i18n-aria="play"><i class="k-cap"></i><i class="k-top"></i><i class="k-front"></i><i class="glyph"><svg viewBox="0 0 24 24"><path id="playIcon" d="M7 5v14l12-7z"/></svg></i></div><span class="engrave">PLAY</span></div>
+          <div class="keyrow"><div role="button" tabindex="0" class="key" id="rewKey" aria-label="Zurück" data-i18n-aria="prev"><i class="k-cap"></i><i class="k-top"></i><i class="k-front"></i><i class="glyph"><svg viewBox="0 0 24 24"><path d="M11 6v12L2 12zM21 6v12l-9-6z"/></svg></i></div><span class="engrave">REW</span></div>
+          <div class="keyrow"><div role="button" tabindex="0" class="key" id="ffKey" aria-label="Vor" data-i18n-aria="next"><i class="k-cap"></i><i class="k-top"></i><i class="k-front"></i><i class="glyph"><svg viewBox="0 0 24 24"><path d="M3 6v12l9-6zM13 6v12l9-6z"/></svg></i></div><span class="engrave">FF</span></div>
         </div>
         <div class="volume" id="volume" aria-hidden="true">
           <div class="scale"><span>10</span><span>8</span><span>6</span><span>4</span><span>2</span><span>0</span></div>

@@ -90,6 +90,7 @@ button { font: inherit; color: inherit; }
 .face.top {
   width: var(--w); height: var(--d);
   transform: translate(-50%, -50%) rotateX(90deg) translateZ(calc(var(--h) / 2));
+  transform-style: preserve-3d; /* sonst wird die Teilen-Taste flach gedrueckt */
   background:
     repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px),
     linear-gradient(180deg, #1a2f68, #25418c);
@@ -104,27 +105,43 @@ button { font: inherit; color: inherit; }
 .floor-shadow { position: absolute; left: 50%; bottom: 0; width: calc(var(--w) * 1.2); height: calc(var(--w) * .16);
   transform: translateX(-55%); background: radial-gradient(closest-side, rgba(0,0,0,.6), transparent); filter: blur(4px); pointer-events: none; }
 
-/* Oberseite */
+/* Oberseite: Teilen-Taste als oranger Block, Vorderkante mit Beschriftung zeigt zum Betrachter */
 .hotline {
-  position: absolute; left: 30%; top: 22%; width: 17%; height: 42%;
-  border: 0; border-radius: .9em; cursor: pointer; padding: 0;
-  background: linear-gradient(#ffc061, #f39a28 55%, #d9790f);
-  box-shadow: 0 .9em 0 #a55809, 0 1.4em 1.4em rgba(0,0,0,.45), inset 0 .25em 0 rgba(255,255,255,.6);
-  transform: translateY(-.8em);
-  transition: transform .08s, box-shadow .08s;
+  --cap-h: 7em;
+  position: absolute; left: 24%; top: 26%; width: 26%; height: 44%;
+  border: 0; padding: 0; background: none; cursor: pointer;
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+  transition: transform .08s;
 }
-.hotline span { font: 800 1.7em/1 -apple-system, sans-serif; color: rgba(110,50,0,.65); letter-spacing: .06em; }
-.hotline:active { transform: translateY(0); box-shadow: 0 .2em 0 #a55809, 0 .4em .6em rgba(0,0,0,.4), inset 0 .25em 0 rgba(255,255,255,.5); }
+.hotline .cap, .hotline .cap-front, .hotline .cap-side { position: absolute; display: block; }
+.hotline .cap { inset: 0; border-radius: .8em; transform: translateZ(var(--cap-h));
+  background: linear-gradient(160deg, #ffd08a, #ffab3d 45%, #f2901c);
+  box-shadow: inset 0 .3em 0 rgba(255,255,255,.55); }
+.hotline .cap-front { left: 0; right: 0; bottom: 0; height: var(--cap-h);
+  transform-origin: bottom center; transform: rotateX(-90deg);
+  background: linear-gradient(#f59a26, #d9770c);
+  border-radius: .6em .6em 0 0;
+  display: flex; align-items: center; justify-content: center; gap: 1em;
+  color: #3a1a00; }
+.hotline .cap-front svg { width: 4.6em; height: 4.6em; fill: #3a1a00; }
+.hotline .cap-front b { font: 900 4.2em/1 "Helvetica Neue", Arial, sans-serif; letter-spacing: .04em; }
+.hotline .cap-side { top: 0; bottom: 0; right: 0; width: var(--cap-h);
+  transform-origin: right center; transform: rotateY(90deg); background: linear-gradient(#c96e0e, #a4560a); }
+.hotline:active, .hotline.down { transform: translateZ(-4.5em); }
+/* Leichter Leuchtring, damit die Teilen-Taste auffaellt */
+.hotline::after { content: ""; position: absolute; inset: -1.2em; border-radius: 1.4em; pointer-events: none;
+  box-shadow: 0 0 2.4em .6em rgba(255,160,50,.35); animation: glow 2.6s ease-in-out infinite; }
+@keyframes glow { 50% { box-shadow: 0 0 3.4em 1em rgba(255,160,50,.6); } }
 .engrave { font: 700 2em/1.15 -apple-system, "Helvetica Neue", Arial, sans-serif; letter-spacing: .08em; }
 .face.top .engrave { color: rgba(225,232,245,.8); position: absolute; }
-.hot-label { left: 30%; top: 72%; width: 17%; text-align: center; }
-.op { position: absolute; left: 6%; top: 34%; display: flex; align-items: center; gap: .8em; font-size: 1.45em; letter-spacing: .08em; opacity: .85; }
+.op { position: absolute; left: 4%; top: 40%; display: flex; align-items: center; gap: .8em; font-size: 1.45em; letter-spacing: .08em; opacity: .85; }
 .jack { position: absolute; top: 20%; }
-.j1 { left: 55%; } .j2 { left: 68%; }
+.j1 { left: 58%; } .j2 { left: 70%; }
 .jack b { display: block; width: 7.5em; height: 7.5em; border-radius: 50%;
   background: radial-gradient(circle, #0b0b0b 0 30%, #7a7f86 31% 44%, #43b06d 45% 62%, #2d7c4c 63% 70%, #14285b 72%);
   box-shadow: inset 0 .2em .4em rgba(0,0,0,.7), 0 .15em 0 rgba(255,255,255,.15); }
-.jack-label { left: 52%; top: 72%; }
+.jack-label { left: 56%; top: 74%; }
 .led { width: 1.6em; height: 1.6em; border-radius: 50%; background: #3b1410; display: inline-block; box-shadow: inset 0 0 2px #000; }
 .led.on { background: #ff5a3a; box-shadow: 0 0 1.5em #ff5a3a; }
 
@@ -180,24 +197,35 @@ button { font: inherit; color: inherit; }
 .status .secondary { font-size: 1em; padding: .7em .9em; }
 
 /* Rechte Seite: geriffelte Metallschieber wie beim Vorbild */
-.face.right .keys { position: absolute; left: 8%; right: 2%; top: 5%; display: flex; flex-direction: column; gap: 2.2em; transform-style: preserve-3d; }
-.keyrow { display: flex; align-items: center; gap: 4.6em; transform-style: preserve-3d; }
+.face.right .keys { position: absolute; left: 6%; right: 0; top: 5%; display: flex; flex-direction: column; gap: 2.2em; transform-style: preserve-3d; }
+.keyrow { display: flex; align-items: center; gap: 10.5em; transform-style: preserve-3d; }
 .key {
-  position: relative; flex: 0 0 40%; height: 10.4em; border: 0; padding: 0; cursor: pointer;
-  border-radius: .7em;
-  background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 .18em, rgba(255,255,255,.35) .18em .36em, transparent .36em .7em),
-    linear-gradient(90deg, #9da2a9, #f1f2f4 40%, #c3c7cc 75%, #8e939a);
-  box-shadow: 0 0 0 .15em rgba(0,0,0,.35), .5em .5em 0 #6e737a, .9em 1em 1.2em rgba(0,0,0,.45);
-  transform: translateZ(1.6em);
-  transition: transform .08s, box-shadow .08s;
+  --kd: 5.2em; /* wie weit die Taste aus der Seite ragt */
+  position: relative; flex: 0 0 34%; height: 10.4em; border: 0; padding: 0; cursor: pointer;
+  background: none;
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+  transition: transform .09s ease-out;
   touch-action: none;
 }
-.key .glyph { position: absolute; right: -.2em; top: 50%; transform: translate(100%, -50%); display: none; }
-.key.down, .key:active { transform: translateZ(.2em); box-shadow: 0 0 0 .15em rgba(0,0,0,.35), .1em .1em 0 #6e737a, .2em .3em .4em rgba(0,0,0,.35); }
-.key.play { background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 .18em, rgba(255,255,255,.35) .18em .36em, transparent .36em .7em),
-    linear-gradient(90deg, #9aa3b5, #eef1f8 40%, #bdc5d6 75%, #8a93a6); }
+.key .k-cap, .key .k-top, .key .k-front { position: absolute; display: block; }
+.key .k-cap { inset: 0; border-radius: .5em; transform: translateZ(var(--kd));
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.26) 0 .2em, rgba(255,255,255,.45) .2em .42em, transparent .42em .8em),
+    linear-gradient(90deg, #a3a8af, #f4f5f7 38%, #cbced3 72%, #9398a0);
+  box-shadow: inset 0 0 0 .15em rgba(0,0,0,.25), inset 0 .3em 0 rgba(255,255,255,.6); }
+/* Oberkante (zeigt nach oben) */
+.key .k-top { left: 0; right: 0; top: 0; height: var(--kd); transform-origin: top center; transform: rotateX(90deg);
+  background: linear-gradient(#f7f8fa, #c9ccd1); }
+/* Vorderkante (zeigt zur Geraetefront, also zum Betrachter) */
+.key .k-front { top: 0; bottom: 0; left: 0; width: var(--kd); transform-origin: left center; transform: rotateY(-90deg);
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.2) 0 .2em, transparent .2em .8em), linear-gradient(90deg, #7d828a, #a7abb2); }
+.key .glyph { display: none; }
+.key.play .k-cap { background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.26) 0 .2em, rgba(255,255,255,.45) .2em .42em, transparent .42em .8em),
+    linear-gradient(90deg, #9ea8bd, #f1f4fb 38%, #c3cbdc 72%, #8c96ab); }
+/* Gedrueckt: Taste faehrt ins Gehaeuse */
+.key.down, .key:active { transform: translateZ(calc(var(--kd) * -.75)); }
 .face.right .engrave { color: #3b3f46; font-size: 2.3em; white-space: nowrap; text-shadow: 0 .06em 0 rgba(255,255,255,.7); }
 
 .face.right .volume { position: absolute; left: 14%; right: 12%; top: 50%; height: 36%;
@@ -266,5 +294,8 @@ code { word-break: break-all; font-size: 12px; color: var(--muted); }
 
 /* Groessere Trefferflaechen: In der Schraegansicht sind die Tasten optisch schmal. Jede Taste
    reagiert auf ihre ganze Zeile (inkl. Beschriftung), die orange Taste auf ihr Umfeld. */
-.key::before { content: ""; position: absolute; top: -1.1em; bottom: -1.1em; left: -6em; right: -40em; }
+.key::before { content: ""; position: absolute; top: -1.1em; bottom: -1.1em; left: -6em; right: -40em; transform: translateZ(var(--kd)); }
 .hotline::before { content: ""; position: absolute; inset: -9em -4em -12em; }
+
+.hotline.disabled { opacity: .55; }
+[role="button"]:focus-visible { outline: .4em solid rgba(255,190,90,.9); outline-offset: .4em; }
