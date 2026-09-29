@@ -363,9 +363,12 @@ async function loadPlaylist(url) {
 // Downloads verschluesselter Titel: je Titel hoechstens einer gleichzeitig (Vorabladen und
 // Titelwahl teilen ihn), ueberholte werden abgebrochen, Fortschritt fuer die Anzeige, und
 // fertige Tapes bleiben (verschluesselt) im Browser-Zwischenspeicher fuer den naechsten Besuch.
-const TAPE_CACHE = "demotape-tapes-v1";
+const TAPE_CACHE = "demotape-tapes-v2";
+// v1 konnte durch einen Fehler unbrauchbare Daten enthalten – einmalig entfernen.
+try { caches.delete("demotape-tapes-v1"); } catch {}
 const TAPE_CACHE_MAX = 16;
 const downloads = new Map(); // url -> { promise, controller, listeners:Set, progress }
+const fromCache = new Set();  // Titel, deren Daten aus dem Zwischenspeicher kamen
 
 async function cachedTape(url) {
   try { const c = await caches.open(TAPE_CACHE); const r = await c.match(url); return r ? await r.arrayBuffer() : null; }
@@ -380,30 +383,36 @@ async function storeTape(url, buffer) {
   } catch {}
 }
 
-function downloadTape(url, onProgress) {
+function downloadTape(url, onProgress, skipCache = false) {
   let d = downloads.get(url);
   if (!d) {
     const controller = new AbortController();
     d = { controller, listeners: new Set(), progress: 0 };
     const report = p => { d.progress = p; d.listeners.forEach(fn => fn(p)); };
     d.promise = (async () => {
-      const hit = await cachedTape(url);
-      if (hit) { report(1); return hit; }
+      const hit = skipCache ? null : await cachedTape(url);
+      if (hit) { fromCache.add(url); report(1); return hit; }
+      fromCache.delete(url);
       const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error("track");
+      // Content-Length ist nur ein Schaetzwert fuer die Anzeige: GitHub Pages liefert
+      // komprimiert aus, die entpackte Groesse weicht davon ab. Deshalb genau das uebernehmen,
+      // was tatsaechlich ankommt.
       const total = +res.headers.get("Content-Length") || 0;
-      if (!res.body || !total) { const b = await res.arrayBuffer(); report(1); return b; }
+      if (!res.body) { const b = await res.arrayBuffer(); report(1); return b; }
       const reader = res.body.getReader();
-      const buf = new Uint8Array(total);
+      const chunks = [];
       let got = 0;
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
-        if (got + value.length > buf.length) throw new Error("size");
-        buf.set(value, got); got += value.length;
-        report(got / total);
+        chunks.push(value); got += value.length;
+        if (total) report(Math.min(got / total, 0.99));
       }
-      storeTape(url, buf.buffer);
+      const buf = new Uint8Array(got);
+      let pos = 0;
+      for (const c of chunks) { buf.set(c, pos); pos += c.length; }
+      report(1);
       return buf.buffer;
     })().finally(() => downloads.delete(url));
     downloads.set(url, d);
@@ -420,7 +429,19 @@ function pruneDownloads(keepUrls) {
 async function sourceFor(track, onProgress) {
   if (!isTape(track.url)) return track.url;
   if (state.blobs.has(track.url)) return state.blobs.get(track.url);
-  const plain = await decryptTape(await downloadTape(track.url, onProgress));
+  let data = await downloadTape(track.url, onProgress);
+  let plain;
+  try {
+    plain = await decryptTape(data);
+  } catch (e) {
+    if (!fromCache.has(track.url)) throw e;
+    // Unbrauchbarer Zwischenspeicher-Eintrag: verwerfen und einmal frisch laden.
+    try { await (await caches.open(TAPE_CACHE)).delete(track.url); } catch {}
+    data = await downloadTape(track.url, onProgress, true);
+    plain = await decryptTape(data);
+  }
+  // Erst nach erfolgreicher Entschluesselung speichern (nur, was nicht schon drin ist).
+  if (!fromCache.has(track.url)) storeTape(track.url, data);
   const inner = track.url.split("?")[0].replace(/\.tape$/i, "");
   const ext = (inner.split(".").pop() || "mp3").toLowerCase();
   const blobUrl = URL.createObjectURL(new Blob([plain], { type: MIME[ext] || "audio/mpeg" }));
