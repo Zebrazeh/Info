@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c1619">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Happy Birthday!">
+<title>Happy Birthday! – DemoTape</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+  <section class="scene" aria-label="Kassettenspieler">
+    <div class="device unit">
+      <!-- Oberseite: orange Taste (Teilen), Buchsen, Betriebsleuchte -->
+      <div class="face top">
+        <div role="button" tabindex="0" class="hotline" id="shareBtn" aria-label="Tape teilen" data-i18n-aria="share">
+          <span class="cap"></span>
+          <span class="cap-front"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM5 5v3h3V5zM16 5v3h3V5zM5 16v3h3v-3zM14 14h3v3h-3zM18 18h3v3h-3zM14 18h2v3h-2zM18 14h3v2h-3z"/></svg><b data-i18n="shareShort">TEILEN</b></span>
+          <span class="cap-side"></span>
+        </div>
+        <span class="op"><i id="led" class="led"></i>OPERATION</span>
+        <span class="jack j1"><b></b></span><span class="jack j2"><b></b></span>
+        <span class="engrave jack-label">HEADPHONES A · B</span>
+      </div>
+      <!-- Front -->
+      <div class="face front">
+        <div class="brandline">
+          <span class="brand">DEMOTAPE</span>
+          <span class="model">STEREO CASSETTE PLAYER · HAPPY BIRTHDAY EDITION</span>
+        </div>
+        <div class="display" aria-live="off">
+          <div id="counter" class="counter"><b>0</b><b>0</b><span>:</span><b>0</b><b>0</b></div>
+          <span id="trackNo" class="track-no"></span>
+          <span id="spinner" class="spinner" hidden></span>
+          <span id="loadInfo" class="load-info"></span>
+        </div>
+        <div class="door">
+          <div class="window" id="slot">
+            <svg id="cassette" class="cassette" viewBox="24 26 140 262" preserveAspectRatio="xMidYMid slice" hidden aria-hidden="true"><g transform="translate(0 314) rotate(-90)">
+          <defs>
+            <linearGradient id="shellShade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#fff" stop-opacity=".10"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/>
+            </linearGradient>
+            <linearGradient id="labelAge" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#f3ead2"/><stop offset=".6" stop-color="#ecdfbf"/><stop offset="1" stop-color="#e2d1a9"/>
+            </linearGradient>
+            <radialGradient id="screwGrad" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#b9b9b9"/><stop offset="1" stop-color="#555"/></radialGradient>
+            <radialGradient id="ringsL" gradientUnits="userSpaceOnUse" cx="93" cy="88" r="2.2" spreadMethod="repeat">
+              <stop offset="0" stop-color="#5a3826"/><stop offset=".5" stop-color="#74492f"/><stop offset="1" stop-color="#4a2d1e"/>
+            </radialGradient>
+            <radialGradient id="ringsR" gradientUnits="userSpaceOnUse" cx="221" cy="88" r="2.2" spreadMethod="repeat">
+              <stop offset="0" stop-color="#5a3826"/><stop offset=".5" stop-color="#74492f"/><stop offset="1" stop-color="#4a2d1e"/>
+            </radialGradient>
+            <clipPath id="paneClip"><rect x="120" y="70" width="74" height="36" rx="3"/></clipPath>
+            <symbol id="screw" viewBox="-5 -5 10 10" width="10" height="10" x="-5" y="-5" overflow="visible">
+              <circle r="4.6" fill="url(#screwGrad)" stroke="#222" stroke-width=".5"/>
+              <path d="M-2.6 0h5.2M0 -2.6v5.2" stroke="#2a2a2a" stroke-width="1.1" stroke-linecap="round"/>
+            </symbol>
+            <!-- Kassettennabe: heller Kunststoffring, dunkles Loch mit sechs nach innen zeigenden Zaehnen -->
+            <symbol id="hub" viewBox="-17 -17 34 34" width="34" height="34" x="-17" y="-17" overflow="visible">
+              <circle r="15.5" fill="#e7e1d3" stroke="#a79f8e" stroke-width=".8"/>
+              <circle r="12.8" fill="none" stroke="#cfc7b5" stroke-width="1.2"/>
+              <circle r="9" fill="#141414"/>
+              <g fill="#e7e1d3">
+                <rect x="-1.4" y="-9.4" width="2.8" height="4" rx=".6"/>
+                <rect x="-1.4" y="-9.4" width="2.8" height="4" rx=".6" transform="rotate(60)"/>
+                <rect x="-1.4" y="-9.4" width="2.8" height="4" rx=".6" transform="rotate(120)"/>
+                <rect x="-1.4" y="-9.4" width="2.8" height="4" rx=".6" transform="rotate(180)"/>
+                <rect x="-1.4" y="-9.4" width="2.8" height="4" rx=".6" transform="rotate(240)"/>
+                <rect x="-1.4" y="-9.4" width="2.8" height="4" rx=".6" transform="rotate(300)"/>
+              </g>
+              <circle r="2" fill="#e7e1d3" opacity=".35"/>
+            </symbol>
+          </defs>
+          <!-- Gehaeuse -->
+          <rect id="shell" x=".5" y=".5" width="313" height="199" rx="10" class="shell"/>
+          <rect x=".5" y=".5" width="313" height="199" rx="10" fill="url(#shellShade)"/>
+          <rect x="3" y="3" width="308" height="194" rx="8" fill="none" stroke="#000" stroke-opacity=".35"/>
+          <!-- Etikett -->
+          <path d="M 26 12 H 290 Q 296 12 296 18 V 133 Q 296 139 290 139 H 24 Q 18 139 18 133 V 20 Z" fill="url(#labelAge)" class="label"/>
+          <line x1="30" y1="24" x2="284" y2="24" class="rule"/>
+          <line x1="30" y1="56" x2="284" y2="56" class="rule"/>
+          <g id="stripes">
+            <rect class="stripe" x="18" y="75" width="48" height="6"/><rect class="stripe" x="248" y="75" width="48" height="6"/>
+            <rect class="stripe" x="18" y="81" width="48" height="6"/><rect class="stripe" x="248" y="81" width="48" height="6"/>
+            <rect class="stripe" x="18" y="87" width="48" height="6"/><rect class="stripe" x="248" y="87" width="48" height="6"/>
+            <rect class="stripe" x="18" y="93" width="48" height="6"/><rect class="stripe" x="248" y="93" width="48" height="6"/>
+            <rect class="stripe" x="18" y="99" width="48" height="6"/><rect class="stripe" x="248" y="99" width="48" height="6"/>
+          </g>
+          <text x="26" y="48" class="side">A</text>
+          <text id="bandName" x="162" y="48" class="ink band" text-anchor="middle" transform="rotate(-1.5 162 42)"></text>
+          <text id="trackName" x="157" y="131" class="ink track" text-anchor="middle" transform="rotate(-1 157 127)"></text>
+          <!-- Sichtfenster -->
+          <rect x="66" y="62" width="182" height="52" rx="12" fill="#151515" stroke="#050505" stroke-width="1.2"/>
+          <rect x="67.5" y="63.5" width="179" height="49" rx="11" fill="none" stroke="#fff" stroke-opacity=".08"/>
+          <circle cx="93" cy="88" r="19" fill="#0b0b0b"/>
+          <circle cx="221" cy="88" r="19" fill="#0b0b0b"/>
+          <rect x="120" y="70" width="74" height="36" rx="3" fill="#0c0b0a"/>
+          <g clip-path="url(#paneClip)">
+            <circle id="packL" cx="93" cy="88" r="50" fill="url(#ringsL)" class="pack"/>
+            <circle id="packR" cx="221" cy="88" r="22" fill="url(#ringsR)" class="pack"/>
+            <rect x="120" y="70" width="74" height="36" fill="url(#shellShade)" opacity=".6"/>
+            <g stroke="#fff" stroke-opacity=".55" stroke-width=".8">
+              <line x1="130" y1="83" x2="130" y2="93"/><line x1="139" y1="83" x2="139" y2="93"/><line x1="148" y1="83" x2="148" y2="93"/>
+              <line x1="157" y1="81" x2="157" y2="95"/><line x1="166" y1="83" x2="166" y2="93"/><line x1="175" y1="83" x2="175" y2="93"/>
+              <line x1="184" y1="83" x2="184" y2="93"/>
+            </g>
+          </g>
+          <rect x="120" y="70" width="74" height="36" rx="3" fill="none" stroke="#000" stroke-width="1"/>
+          <g id="hubL" transform="translate(93 88)"><use href="#hub"/></g>
+          <g id="hubR" transform="translate(221 88)"><use href="#hub"/></g>
+          <!-- Unterteil mit Fuehrungsloechern -->
+          <path d="M 56 200 L 76 142 L 238 142 L 258 200 Z" class="trap"/>
+          <path d="M 56 200 L 76 142 L 238 142 L 258 200 Z" fill="url(#shellShade)"/>
+          <g fill="#070707">
+            <circle cx="86" cy="178" r="6"/><circle cx="228" cy="178" r="6"/>
+            <rect x="108" y="172" width="11" height="11" rx="2"/><rect x="195" y="172" width="11" height="11" rx="2"/>
+          </g>
+          <g class="screws">
+            <use href="#screw" x="11" y="11"/><use href="#screw" x="303" y="11"/>
+            <use href="#screw" x="11" y="189"/><use href="#screw" x="303" y="189"/>
+            <use href="#screw" x="157" y="156"/>
+          </g>
+          </g></svg>
+            <button id="emptySlot" class="empty-slot">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 4 15h16zM4 17h16v2H4z"/></svg>
+              <span class="hand" data-i18n="insert">Tape einlegen</span>
+            </button>
+            <div id="status" class="status" hidden></div>
+            <div class="glass"></div>
+          </div>
+          <svg class="arrow" viewBox="0 0 24 60" aria-hidden="true"><path d="M12 2 2 16h6v42h8V16h6z"/></svg>
+        </div>
+        <div class="stereo" aria-hidden="true">STEREO</div>
+        <i class="screw-dot" aria-hidden="true"></i>
+      </div>
+      <!-- Rechte Seite: Metallschieber-Tasten, Lautstaerke, Buchse -->
+      <div class="face right">
+        <div class="keys">
+          <div class="keyrow"><div role="button" tabindex="0" class="key" id="stopKey" aria-label="Stopp / Auswerfen" data-i18n-aria="stopEject"><i class="k-cap"></i><i class="k-top"></i><i class="k-front"></i><i class="glyph"><svg viewBox="0 0 24 24"><path d="M5 5h14v9H5zM5 16h14v3H5z"/></svg></i></div><span class="engrave">STOP<br>EJECT</span></div>
+          <div class="keyrow"><div role="button" tabindex="0" class="key play" id="playKey" aria-label="Abspielen" data-i18n-aria="play"><i class="k-cap"></i><i class="k-top"></i><i class="k-front"></i><i class="glyph"><svg viewBox="0 0 24 24"><path id="playIcon" d="M7 5v14l12-7z"/></svg></i></div><span class="engrave">PLAY</span></div>
+          <div class="keyrow"><div role="button" tabindex="0" class="key" id="rewKey" aria-label="Zurück" data-i18n-aria="prev"><i class="k-cap"></i><i class="k-top"></i><i class="k-front"></i><i class="glyph"><svg viewBox="0 0 24 24"><path d="M11 6v12L2 12zM21 6v12l-9-6z"/></svg></i></div><span class="engrave">REW</span></div>
+          <div class="keyrow"><div role="button" tabindex="0" class="key" id="ffKey" aria-label="Vor" data-i18n-aria="next"><i class="k-cap"></i><i class="k-top"></i><i class="k-front"></i><i class="glyph"><svg viewBox="0 0 24 24"><path d="M3 6v12l9-6zM13 6v12l9-6z"/></svg></i></div><span class="engrave">FF</span></div>
+        </div>
+        <div class="volume" id="volume" aria-hidden="true">
+          <div class="scale"><span>10</span><span>8</span><span>6</span><span>4</span><span>2</span><span>0</span></div>
+          <div class="vol-track"><div class="vol-knob" id="volKnob"></div></div>
+          <span class="engrave vol-label">VOLUME</span>
+        </div>
+        <i class="side-jack" aria-hidden="true"></i>
+      </div>
+    </div>
+    <div class="floor-shadow" aria-hidden="true"></div>
+  </section>
+
+  <p class="legend" data-i18n="legend">◀◀ / ▶▶ kurz tippen = Titel wechseln · gedrückt halten = spulen</p>
+
+  <section id="jcard" class="jcard" hidden>
+    <div class="jcard-head"><span id="jBand" class="hand"></span><span id="jTape" class="hand small"></span></div>
+    <ol id="jTracks"></ol>
+  </section>
+</main>
+
+<dialog id="shelf" class="sheet">
+  <form method="dialog" class="sheet-inner" id="shelfForm">
+    <header><h2 data-i18n="insert">Tape einlegen</h2><button class="close" value="cancel" aria-label="Schließen" data-i18n-aria="close">✕</button></header>
+    <label for="listInput" data-i18n="address">Playlist-Adresse</label>
+    <input id="listInput" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…/demo.m3u">
+    <p id="inputError" class="error" hidden data-i18n="badAddress">Bitte eine https-Adresse einer M3U-Playlist angeben.</p>
+    <button class="primary" id="insertBtn" type="submit" value="insert" data-i18n="insertBtn">Einlegen</button>
+    <h3 id="recentHead" data-i18n="recent" hidden>Zuletzt eingelegt</h3>
+    <ul id="recent" class="recent"></ul>
+    <p class="fine"><a href="datenschutz" data-i18n="privacy">Datenschutzerklärung</a></p>
+  </form>
+</dialog>
+
+<dialog id="share" class="sheet">
+  <div class="sheet-inner center">
+    <header><h2 data-i18n="share">Tape teilen</h2><button class="close" id="shareClose" aria-label="Schließen" data-i18n-aria="close">✕</button></header>
+    <div id="shareBand" class="hand big"></div>
+    <div id="qr" class="qr"></div>
+    <p class="fine" data-i18n="scanHint">Mit der Handykamera scannen – das Tape wird direkt eingelegt.</p>
+    <p><code id="shareLink"></code></p>
+    <div class="row">
+      <button class="secondary" id="copyBtn" data-i18n="copy">Link kopieren</button>
+      <button class="primary" id="nativeShare" data-i18n="shareLink" hidden>Link teilen</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="vendor/qrcode.js"></script>
+<script src="k.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

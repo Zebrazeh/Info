@@ -1,0 +1,309 @@
+@font-face {
+  font-family: "Caveat";
+  src: url("fonts/caveat-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+
+:root {
+  --bg: #1c1619;
+  --body-top: #ccd1d9;
+  --body-bottom: #99a1ad;
+  --bezel: #292a2e;
+  --accent: #e8622c;
+  --label: #f5edd6;
+  --ink: #1f296b;
+  --tape: #6b4229;
+  --key: #3a3a42;
+  --text: #f2ece4;
+  --muted: #b3a9a2;
+  --shell: #ede9df;
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background: radial-gradient(ellipse at top, rgba(232, 98, 44, .2), transparent 60%), var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-user-select: none; user-select: none;
+  overscroll-behavior: none;
+}
+.hand { font-family: "Caveat", "Bradley Hand", cursive; font-weight: 600; }
+button { font: inherit; color: inherit; }
+
+#app {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 18px;
+  container-type: inline-size;
+}
+
+/* ---------- Geraet in 3D (Front, rechte Seite, Oberseite) ---------- */
+/* Masse: --w Frontbreite, Hoehe = --w / .63, Tiefe --d. Innen ist 1em = 1 % der Frontbreite. */
+.scene {
+  --w: min(70vw, 320px, calc((100svh - 200px) * .54));
+  --h: calc(var(--w) / .63);
+  --d: calc(var(--w) * .38);
+  --blue-hi: #3a5fb4; --blue: #28479a; --blue-lo: #1b3475;
+  position: relative;
+  height: calc(var(--h) * 1.04 + var(--d) * .3);
+  display: flex; align-items: center; justify-content: center;
+  perspective: 1400px;
+  perspective-origin: 50% 20%;
+  margin: 6px 0 4px;
+  touch-action: manipulation;
+}
+.device {
+  position: relative; width: var(--w); height: var(--h);
+  font-size: calc(var(--w) / 100);
+  transform-style: preserve-3d;
+  transform: translateX(calc(var(--d) * -.18)) rotateX(-19deg) rotateY(-37deg);
+}
+.face { position: absolute; left: 50%; top: 50%; }
+.face.front {
+  width: var(--w); height: var(--h);
+  transform: translate(-50%, -50%) translateZ(calc(var(--d) / 2));
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.028) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 70% at 20% 10%, rgba(255,255,255,.16), transparent 60%),
+    linear-gradient(165deg, var(--blue-hi), var(--blue) 45%, var(--blue-lo));
+  border-radius: 1.6em 0 0 1.6em;
+  box-shadow: inset .4em 0 .6em rgba(255,255,255,.12), inset 0 -.6em 1em rgba(0,0,0,.35);
+  display: flex; flex-direction: column;
+  padding: 7em 7em 6em 7em;
+}
+.face.right {
+  width: var(--d); height: var(--h);
+  transform: translate(-50%, -50%) rotateY(90deg) translateZ(calc(var(--w) / 2));
+  transform-style: preserve-3d;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.22) 0 1px, rgba(0,0,0,.04) 1px 2px, transparent 2px 4px),
+    linear-gradient(90deg, #c9ccd1, #e9ebee 30%, #b7bbc1 75%, #9ea3aa);
+  border-radius: 0 1.6em 1.6em 0;
+  box-shadow: inset 0 0 0 .25em rgba(0,0,0,.12), inset -.6em 0 1em rgba(0,0,0,.18);
+}
+.face.top {
+  width: var(--w); height: var(--d);
+  transform: translate(-50%, -50%) rotateX(90deg) translateZ(calc(var(--h) / 2));
+  transform-style: preserve-3d; /* sonst wird die Teilen-Taste flach gedrueckt */
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #1a2f68, #25418c);
+  border-radius: 1.6em 1.6em 0 0;
+  box-shadow: inset 0 -.3em .5em rgba(255,255,255,.12);
+  color: #dfe5f2;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+/* Silberne Kante rechts oben auf der Oberseite (wie beim Vorbild) */
+.face.top::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 14%;
+  background: linear-gradient(90deg, #aeb2b8, #e2e4e7); border-radius: 0 1.6em 0 0; }
+.floor-shadow { position: absolute; left: 50%; bottom: 0; width: calc(var(--w) * 1.2); height: calc(var(--w) * .16);
+  transform: translateX(-55%); background: radial-gradient(closest-side, rgba(0,0,0,.6), transparent); filter: blur(4px); pointer-events: none; }
+
+/* Oberseite: Teilen-Taste als oranger Block, Vorderkante mit Beschriftung zeigt zum Betrachter */
+.hotline {
+  --cap-h: 7em;
+  position: absolute; left: 24%; top: 26%; width: 26%; height: 44%;
+  border: 0; padding: 0; background: none; cursor: pointer;
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+  transition: transform .08s;
+}
+.hotline .cap, .hotline .cap-front, .hotline .cap-side { position: absolute; display: block; }
+.hotline .cap { inset: 0; border-radius: .8em; transform: translateZ(var(--cap-h));
+  background: linear-gradient(160deg, #ffd08a, #ffab3d 45%, #f2901c);
+  box-shadow: inset 0 .3em 0 rgba(255,255,255,.55); }
+.hotline .cap-front { left: 0; right: 0; bottom: 0; height: var(--cap-h);
+  transform-origin: bottom center; transform: rotateX(-90deg);
+  background: linear-gradient(#f59a26, #d9770c);
+  border-radius: .6em .6em 0 0;
+  display: flex; align-items: center; justify-content: center; gap: 1em;
+  color: #3a1a00; }
+.hotline .cap-front svg { width: 4.6em; height: 4.6em; fill: #3a1a00; }
+.hotline .cap-front b { font: 900 4.2em/1 "Helvetica Neue", Arial, sans-serif; letter-spacing: .04em; }
+.hotline .cap-side { top: 0; bottom: 0; right: 0; width: var(--cap-h);
+  transform-origin: right center; transform: rotateY(90deg); background: linear-gradient(#c96e0e, #a4560a); }
+.hotline:active, .hotline.down { transform: translateZ(-4.5em); }
+/* Leichter Leuchtring, damit die Teilen-Taste auffaellt */
+.hotline::after { content: ""; position: absolute; inset: -1.2em; border-radius: 1.4em; pointer-events: none;
+  box-shadow: 0 0 2.4em .6em rgba(255,160,50,.35); animation: glow 2.6s ease-in-out infinite; }
+@keyframes glow { 50% { box-shadow: 0 0 3.4em 1em rgba(255,160,50,.6); } }
+.engrave { font: 700 2em/1.15 -apple-system, "Helvetica Neue", Arial, sans-serif; letter-spacing: .08em; }
+.face.top .engrave { color: rgba(225,232,245,.8); position: absolute; }
+.op { position: absolute; left: 4%; top: 40%; display: flex; align-items: center; gap: .8em; font-size: 1.45em; letter-spacing: .08em; opacity: .85; }
+.jack { position: absolute; top: 20%; }
+.j1 { left: 58%; } .j2 { left: 70%; }
+.jack b { display: block; width: 7.5em; height: 7.5em; border-radius: 50%;
+  background: radial-gradient(circle, #0b0b0b 0 30%, #7a7f86 31% 44%, #43b06d 45% 62%, #2d7c4c 63% 70%, #14285b 72%);
+  box-shadow: inset 0 .2em .4em rgba(0,0,0,.7), 0 .15em 0 rgba(255,255,255,.15); }
+.jack-label { left: 56%; top: 74%; }
+.led { width: 1.6em; height: 1.6em; border-radius: 50%; background: #3b1410; display: inline-block; box-shadow: inset 0 0 2px #000; }
+.led.on { background: #ff5a3a; box-shadow: 0 0 1.5em #ff5a3a; }
+
+/* Front */
+.brandline { display: flex; flex-direction: column; margin-bottom: 1.4em; }
+.brand { font: 800 6.4em/1 "Helvetica Neue", Arial, sans-serif; letter-spacing: .12em; color: #f3f5f9;
+  text-shadow: 0 .06em 0 rgba(0,0,0,.35); }
+.model { font: 500 1.9em/1.5 "Helvetica Neue", Arial, sans-serif; letter-spacing: .07em; color: #cdd6ea; }
+.display { display: flex; align-items: center; gap: 1.6em; margin-bottom: 2.6em; min-height: 4.6em; }
+.counter { display: flex; gap: .4em; align-items: center; }
+.counter b { font: 700 3em/4.4em ui-monospace, Menlo, monospace; line-height: 1.45; color: #fff; background: #0c1633; width: 1.1em; text-align: center; border-radius: .15em; box-shadow: inset 0 1px 2px rgba(0,0,0,.8); }
+.counter span { font-weight: 700; font-size: 2.8em; color: #cdd5e6; }
+.track-no { font: 700 2.5em ui-monospace, Menlo, monospace; color: #cdd5e6; }
+.load-info { font: 700 2.3em ui-monospace, Menlo, monospace; color: #cdd5e6; }
+.spinner { width: 2.8em; height: 2.8em; border: .45em solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.led.wait { animation: ledwait 1s steps(2, jump-none) infinite; }
+@keyframes ledwait { 50% { background: #ff5a3a; box-shadow: 0 0 1.5em #ff5a3a; } }
+
+.door { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7em; min-height: 0; padding-right: 3em; }
+.window {
+  position: relative; height: 100%; aspect-ratio: .535; max-width: 66%;
+  background: linear-gradient(#0b0d14, #1d2230);
+  border-radius: 1.6em; overflow: hidden;
+  box-shadow: 0 0 0 .7em #142a63, 0 0 0 1em rgba(255,255,255,.14), 0 .3em 0 1em rgba(0,0,0,.35);
+}
+.glass { position: absolute; inset: 0; border-radius: 1.6em; pointer-events: none; z-index: 2;
+  background: linear-gradient(115deg, rgba(140,170,255,.22), transparent 38%, transparent 70%, rgba(255,255,255,.08)),
+              linear-gradient(rgba(10,20,50,.18), rgba(10,20,50,.18));
+  box-shadow: inset 0 0 1.2em .6em rgba(0,0,0,.65), inset 0 0 0 .3em rgba(0,0,0,.6); }
+.arrow { flex: 0 0 6em; width: 6em; height: auto; fill: none; stroke: #eef1f7; stroke-width: 1.6; stroke-linejoin: round; }
+.stereo {
+  font: 900 9em/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: .06em;
+  color: transparent; -webkit-text-stroke: .045em #eef1f7; margin: 3em 0 0 .2em;
+}
+.screw-dot { position: absolute; right: 5em; bottom: 16em; width: 1.4em; height: 1.4em; border-radius: 50%; background: radial-gradient(#d8dce4, #7c8290); opacity: .7; }
+
+.cassette { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cassette .shell { fill: var(--shell); stroke: rgba(0, 0, 0, .35); }
+.cassette .rule { stroke: rgba(60, 70, 110, .28); stroke-width: .8; }
+.cassette .side { font: 800 15px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #2b2b30; }
+.cassette .ink { font-family: "Caveat", "Bradley Hand", cursive; font-weight: 600; fill: #1c2150; }
+.cassette .band { font-size: 31px; }
+.cassette .track { font-size: 17px; opacity: .92; }
+.cassette .trap { fill: var(--shell); stroke: rgba(0, 0, 0, .45); }
+
+.empty-slot { background: none; border: 0; cursor: pointer; color: rgba(255,255,255,.85); position: absolute; inset: 0; z-index: 3;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1em; font-size: 5em; line-height: 1; text-align: center; padding: .4em; }
+.empty-slot svg { width: 1.4em; height: 1.4em; fill: currentColor; }
+.status { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 1em; z-index: 3;
+  align-items: center; justify-content: center; text-align: center; padding: 1.5em; color: rgba(255,255,255,.88); font-size: 3em; }
+.status .hand { font-size: 1.8em; }
+.status .secondary { font-size: 1em; padding: .7em .9em; }
+
+/* Rechte Seite: geriffelte Metallschieber wie beim Vorbild */
+.face.right .keys { position: absolute; left: 6%; right: 0; top: 5%; display: flex; flex-direction: column; gap: 2.2em; transform-style: preserve-3d; }
+.keyrow { display: flex; align-items: center; gap: 10.5em; transform-style: preserve-3d; }
+.key {
+  --kd: 5.2em; /* wie weit die Taste aus der Seite ragt */
+  position: relative; flex: 0 0 34%; height: 10.4em; border: 0; padding: 0; cursor: pointer;
+  background: none;
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+  transition: transform .09s ease-out;
+  touch-action: none;
+}
+.key .k-cap, .key .k-top, .key .k-front { position: absolute; display: block; }
+.key .k-cap { inset: 0; border-radius: .5em; transform: translateZ(var(--kd));
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.26) 0 .2em, rgba(255,255,255,.45) .2em .42em, transparent .42em .8em),
+    linear-gradient(90deg, #a3a8af, #f4f5f7 38%, #cbced3 72%, #9398a0);
+  box-shadow: inset 0 0 0 .15em rgba(0,0,0,.25), inset 0 .3em 0 rgba(255,255,255,.6); }
+/* Oberkante (zeigt nach oben) */
+.key .k-top { left: 0; right: 0; top: 0; height: var(--kd); transform-origin: top center; transform: rotateX(90deg);
+  background: linear-gradient(#f7f8fa, #c9ccd1); }
+/* Vorderkante (zeigt zur Geraetefront, also zum Betrachter) */
+.key .k-front { top: 0; bottom: 0; left: 0; width: var(--kd); transform-origin: left center; transform: rotateY(-90deg);
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.2) 0 .2em, transparent .2em .8em), linear-gradient(90deg, #7d828a, #a7abb2); }
+.key .glyph { display: none; }
+.key.play .k-cap { background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.26) 0 .2em, rgba(255,255,255,.45) .2em .42em, transparent .42em .8em),
+    linear-gradient(90deg, #9ea8bd, #f1f4fb 38%, #c3cbdc 72%, #8c96ab); }
+/* Gedrueckt: Taste faehrt ins Gehaeuse */
+.key.down, .key:active { transform: translateZ(calc(var(--kd) * -.75)); }
+.face.right .engrave { color: #3b3f46; font-size: 2.3em; white-space: nowrap; text-shadow: 0 .06em 0 rgba(255,255,255,.7); }
+
+.face.right .volume { position: absolute; left: 14%; right: 12%; top: 50%; height: 36%;
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: 1fr auto; column-gap: 2em; touch-action: none; }
+.scale { display: flex; flex-direction: column; justify-content: space-between; font: 700 2.2em/1 -apple-system, Arial, sans-serif; color: #50555c; }
+.vol-track { --knob-h: 7em; position: relative; width: 5em; justify-self: center; background: linear-gradient(90deg, #5b6068, #2e3136); border-radius: .8em; box-shadow: inset 0 .2em .5em rgba(0,0,0,.7); }
+.vol-knob { position: absolute; left: -1.6em; right: -1.6em; height: var(--knob-h); top: 30%;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 .18em, transparent .18em .5em), linear-gradient(90deg, #9ca1a8, #f1f2f4 40%, #b8bcc2);
+  border-radius: .6em; box-shadow: .3em .4em .8em rgba(0,0,0,.5); cursor: grab; transform: translateZ(1em); }
+.vol-label { grid-column: 1 / 3; text-align: center; margin-top: 1em; }
+.side-jack { position: absolute; left: 50%; bottom: 4%; width: 6em; height: 6em; transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(#0d0d0d 40%, #6b7076 46%, #b9bdc3 60%); }
+
+.legend { margin: 0; color: rgba(255, 255, 255, .6); font-size: 14px; text-align: center; }
+
+/* ---------- J-Card ---------- */
+.jcard {
+  background: var(--label); color: var(--ink); border-radius: 6px; padding: 10px 14px 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .5); transform: rotate(-.8deg);
+}
+.jcard-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
+.jcard-head .hand { font-size: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jcard-head .small { font-size: 18px; opacity: .7; }
+.jcard ol { list-style: none; margin: 4px 0 0; padding: 0; max-height: 40vh; overflow-y: auto; }
+.jcard li { font-family: "Caveat", "Bradley Hand", cursive; font-weight: 600; font-size: 21px;
+  padding: 3px 0; border-bottom: 1px solid rgba(31, 41, 107, .12); cursor: pointer; display: flex; gap: 8px; }
+.jcard li .n { width: 26px; text-align: right; flex: none; }
+.jcard li .t { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jcard li.on::after { content: "←"; color: var(--accent); font-family: -apple-system, sans-serif; font-weight: 700; }
+
+/* ---------- Dialoge ---------- */
+.sheet {
+  border: 0; padding: 0; width: min(440px, 100vw); max-width: 100vw; max-height: 90vh;
+  margin: auto auto 0; border-radius: 18px 18px 0 0; background: #2a2226; color: var(--text);
+  -webkit-user-select: text; user-select: text;
+}
+@media (min-width: 600px) { .sheet { margin: auto; border-radius: 18px; } }
+.sheet::backdrop { background: rgba(0, 0, 0, .6); }
+.sheet-inner { padding: 18px 18px max(22px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; }
+.sheet-inner.center { align-items: center; text-align: center; }
+.sheet header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.sheet h2 { margin: 0; font-size: 19px; }
+.sheet h3 { margin: 10px 0 0; font-size: 14px; color: var(--muted); font-weight: 600; }
+.close { background: rgba(255, 255, 255, .1); border: 0; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; }
+.sheet label { font-size: 14px; color: var(--muted); }
+.sheet input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #555; background: #1c1619; color: var(--text); font-size: 16px; }
+.primary, .secondary { border: 0; border-radius: 12px; padding: 13px 18px; font-weight: 700; cursor: pointer; font-size: 16px; }
+.primary { background: var(--accent); color: #fff; }
+.secondary { background: rgba(255, 255, 255, .12); }
+.error { color: #ff7b6b; font-size: 14px; margin: 0; }
+.recent { list-style: none; margin: 0; padding: 0; }
+.recent li { display: flex; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.recent button { background: none; border: 0; text-align: left; padding: 8px 0; cursor: pointer; flex: 1; }
+.recent .hand { font-size: 24px; display: block; }
+.recent small { color: var(--muted); }
+.recent .del { flex: none; width: 36px; color: var(--muted); text-align: center; }
+.fine { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+.fine a { color: var(--muted); }
+.big { font-size: 34px; color: var(--text); }
+.qr { background: #fff; border-radius: 14px; padding: 14px; width: min(260px, 70vw); }
+.qr svg { display: block; width: 100%; height: auto; }
+code { word-break: break-all; font-size: 12px; color: var(--muted); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+
+/* Groessere Trefferflaechen: In der Schraegansicht sind die Tasten optisch schmal. Jede Taste
+   reagiert auf ihre ganze Zeile (inkl. Beschriftung), die orange Taste auf ihr Umfeld. */
+.key::before { content: ""; position: absolute; top: -1.1em; bottom: -1.1em; left: -6em; right: -40em; transform: translateZ(var(--kd)); }
+.hotline::before { content: ""; position: absolute; inset: -9em -4em -12em; }
+
+.hotline.disabled { opacity: .55; }
+[role="button"]:focus-visible { outline: .4em solid rgba(255,190,90,.9); outline-offset: .4em; }
+
+/* Teilen-Fenster mittig statt als Blatt von unten */
+#share.sheet { margin: auto; border-radius: 18px; max-height: 88vh; width: min(420px, calc(100vw - 32px)); }
+#share .sheet-inner { padding-bottom: 22px; }
+
+/* Einlegeblatt: kurze Kopfzeile nicht abschneiden */
+.jcard-head { flex-wrap: wrap; }
+.jcard-head .hand { overflow: visible; text-overflow: clip; }
