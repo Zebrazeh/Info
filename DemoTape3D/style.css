@@ -226,11 +226,11 @@ button { font: inherit; color: inherit; }
     linear-gradient(90deg, #9ea8bd, #f1f4fb 38%, #c3cbdc 72%, #8c96ab); }
 /* Gedrueckt: Taste faehrt ins Gehaeuse */
 .key.down, .key:active { transform: translateZ(calc(var(--kd) * -.75)); }
-.face.right .engrave { color: #3b3f46; font-size: 2.3em; white-space: nowrap; text-shadow: 0 .06em 0 rgba(255,255,255,.7); }
+.face.right .engrave { color: #000; font-size: 2.8em; font-weight: 800; white-space: nowrap; text-shadow: 0 .05em 0 rgba(255,255,255,.6); }
 
 .face.right .volume { position: absolute; left: 14%; right: 12%; top: 50%; height: 36%;
   display: grid; grid-template-columns: auto 1fr; grid-template-rows: 1fr auto; column-gap: 2em; touch-action: none; }
-.scale { display: flex; flex-direction: column; justify-content: space-between; font: 700 2.2em/1 -apple-system, Arial, sans-serif; color: #50555c; }
+.scale { display: flex; flex-direction: column; justify-content: space-between; font: 800 2.5em/1 -apple-system, Arial, sans-serif; color: #000; }
 .vol-track { --knob-h: 7em; position: relative; width: 5em; justify-self: center; background: linear-gradient(90deg, #5b6068, #2e3136); border-radius: .8em; box-shadow: inset 0 .2em .5em rgba(0,0,0,.7); }
 .vol-knob { position: absolute; left: -1.6em; right: -1.6em; height: var(--knob-h); top: 30%;
   background: repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 .18em, transparent .18em .5em), linear-gradient(90deg, #9ca1a8, #f1f2f4 40%, #b8bcc2);
